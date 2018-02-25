@@ -975,10 +975,6 @@ rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
-rcon@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/rcon/-/rcon-1.0.3.tgz#d57ea3aa45c283ed546cec0d225980138d01d992"
-
 readable-stream@^2.0.2, readable-stream@^2.0.6, readable-stream@^2.1.4:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.4.tgz#c946c3f47fa7d8eabc0b6150f4a12f69a4574071"
@@ -1166,6 +1162,10 @@ split-string@^3.0.1, split-string@^3.0.2:
   resolved "https://registry.yarnpkg.com/split-string/-/split-string-3.1.0.tgz#7cb09dda3a86585705c64b39a6466038682e8fe2"
   dependencies:
     extend-shallow "^3.0.0"
+
+srcds-rcon@randunel/node-srcds-rcon:
+  version "2.2.1"
+  resolved "https://codeload.github.com/randunel/node-srcds-rcon/tar.gz/5c285a90cdd8eec8202f66c69009b642d91aa076"
 
 sshpk@^1.7.0:
   version "1.13.1"

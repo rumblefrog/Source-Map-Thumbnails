@@ -1,7 +1,7 @@
 const spawn = require('child_process').spawn
     , config = require('./config.json')
     , ip = require('ip')
-    , rcon = require('rcon')
+    , rcon = require('srcds-rcon')
     , log = require('winston')
     , chokidar = require('chokidar')
     , glob = require('glob')
@@ -53,28 +53,12 @@ log.info(`Session RCON Password: ${RP}`)
 log.info('Launching game ...');
 log.info('Allowing up to 120 seconds before connection attempt');
 
-const conn = new rcon(ip.address(), 27015, RP);
+const conn = new rcon({
+  address: ip.address(),
+  password: RP
+});
 
-conn.on('auth', () => {
-  log.info('Successfully connected to game, switching to first map ...');
-
-  switchMap(index);
-})
-
-conn.on('error', (err) => {
-
-  log.debug(err);
-  log.warn('Failed to connect, retrying in 30 seconds')
-
-  setTimeout(() => {
-    conn.connect();
-  }, 30000);
-
-})
-
-setInterval(() => {
-  conn.connect();
-}, 120000);
+setInterval(attemptRconConnect, 120000);
 
 const watcher = chokidar.watch(game_dir + 'screenshots', {ignored: /(^|[\/\\])\../});
 
@@ -86,6 +70,23 @@ game.on('close', (code) => {
   log.info('Game has exited, terminating script');
   process.exit(0);
 });
+
+function attemptRconConnect() {
+  rcon.connect()
+    .then(() => {
+      log.info('Successfully connected to game, switching to first map ...');
+
+      switchMap(index);
+    })
+    .catch((err) => {
+      log.debug(err);
+      log.warn('Failed to connect, retrying in 30 seconds')
+
+      setTimeout(() => {
+        attemptRconConnect();
+      }, 30000);
+    });
+}
 
 function switchMap(n) {
   checkFileExists(maps[n])
