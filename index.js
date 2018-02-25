@@ -88,18 +88,8 @@ function attemptRconConnect() {
 
 function attemptScreenshot() {
   conn.command('status')
-    .then((status) => {
-      conn.command('jpeg')
-        .then(() => {
-          log.info(`Screenshotted ${getMapName(index)}`)
-        })
-        .catch((err) => {
-          log.debug(err);
-          log.warn('Failed to take screenshot, retrying in 5 seconds');
-
-          setTimeout(attemptScreenshot, 5000);
-        });
-    })
+    .then(() => conn.command('jpeg'))
+    .then(() => log.info(`Screenshotted ${getMapName(index)}`))
     .catch((err) => {
       log.debug(err);
       log.warn('Failed to take screenshot, retrying in 5 seconds');
