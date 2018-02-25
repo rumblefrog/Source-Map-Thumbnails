@@ -1,8 +1,10 @@
 const spawn = require('child_process').spawn
     , config = require('./config.json')
+    , ip = require('ip')
     , rcon = require('rcon')
     , log = require('winston')
     , chokidar = require('chokidar')
+    , glob = require('glob')
     , path = require('path')
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
@@ -28,6 +30,8 @@ const RP = Math.random().toString(36).substring(2);
 
 const game = spawn(config.game_binary_location, [
   `-game`, config.game,
+  '-windowed',
+  '-noborder',
   '-novid',
   '-usercon',
   `+map`, config.starting_map,
@@ -35,16 +39,21 @@ const game = spawn(config.game_binary_location, [
   ... [].concat(... config.launch_options.map(o => o.split(' ')))
 ]);
 
+log.info(`Session RCON Password: ${RP}`)
 log.info('Launching game ...');
+log.info('Allowing up to 120 seconds before connection attempt');
 
-const conn = new rcon('127.0.0.1', 27015, RP);
+const conn = new rcon(ip.address(), 27015, RP);
 
 conn.on('auth', () => {
-  log.info('Successfully connected to game');
+  log.info('Successfully connected to game, switching to first map ...');
+
+  conn.send(`map ${maps[index]}`);
 })
 
 conn.on('error', (err) => {
 
+  log.debug(err);
   log.warn('Failed to connect, retrying in 30 seconds')
 
   setTimeout(() => {
@@ -53,7 +62,9 @@ conn.on('error', (err) => {
 
 })
 
-conn.connect();
+setInterval(() => {
+  conn.connect();
+}, 120000);
 
 const watcher = chokidar.watch(config.screenshot_directory);
 
