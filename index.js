@@ -59,7 +59,7 @@ const conn = rcon({
   password: RP
 });
 
-setTimeout(attemptRconConnect, 120000);
+setTimeout(attemptRconConnect, 60000); //Switch back to 120
 
 game.on('close', (code) => {
   log.info('Game has exited, terminating script');
@@ -82,61 +82,67 @@ function attemptRconConnect() {
 }
 
 function attemptScreenshot() {
-  conn.command('status')
-    .then(() => {
-      processWindows.focusWindow(game.pid);
-      setTimeout(() => {
-        robotjs.keyTap('enter');
-        setTimeout(() => {
-          robotjs.keyTap('enter');
+  log.info('Attempting to screenshot ...');
+  new Promise((madeit, tooslow) => {
+    setTimeout(() => {
+      tooslow();
+    }, 5000);
+    conn.command('status')
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          processWindows.focusWindow(game.pid);
           setTimeout(() => {
-            robotjs.keyTap('2');
-            return conn.command('cl_drawhud 0');
-          }, 500)
-        }, 500)
-      }, 500)
-    })
-    .then(() => {
-      return getNodes();
-    })
-    .then((count) => {
-      return new Promise((resolve, reject) => {
-        let i = 1;
-        const iter = setInterval(() => {
-          if (i >= count) {
-            clearInterval(iter);
-            resolve(count);
-          } else {
-            i++;
-            conn.command('jpeg')
-              .then(() => conn.command('spec_next'));
-          }
-        }, 100);
-      });
-    })
-    .then((count) => {
-      log.info(`Screenshotted ${getMapName(index)} in ${count} spectator nodes`);
-    })
-    .catch((err) => {
-      log.debug(err);
-      log.warn('Failed to take screenshot, retrying in 5 seconds');
-
-      setTimeout(attemptScreenshot, 5000);
-    })
+            robotjs.keyTap('enter');
+            setTimeout(() => {
+              robotjs.keyTap('enter');
+              setTimeout(() => {
+                robotjs.keyTap('2');
+                resolve();
+              }, 500)
+            }, 500)
+          });
+        })
+      })
+      .then(() => conn.command('sv_cheats 1'))
+      .then(() => conn.command('cl_drawhud 0'))
+      .then(() => getNodes())
+      .then((count) => {
+        return new Promise((resolve, reject) => {
+          madeit();
+          let i = 1;
+          const iter = setInterval(() => {
+            if (i > count) {
+              clearInterval(iter);
+              resolve(count);
+            } else {
+              i++;
+              conn.command('jpeg')
+                .then((o) => conn.command('spec_next'))
+                .catch((err) => {});
+            }
+          }, 100);
+        });
+      })
+      .then((count) => {
+        log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
+      })
+      .catch((err) => {})
+  }).then(() => {}).catch((err) => setTimeout(attemptScreenshot, 5000))
 }
 
 function getNodes() {
   return new Promise((resolve, reject) => {
     const pos = [];
     const iter = setInterval(() => {
-      conn.command('spec_pos').them((p) => {
+      conn.command('spec_pos;spec_next').then((p) => {
         if (pos.includes(p)) {
           clearInterval(iter);
           resolve(pos.length);
-        } else
+        } else {
           pos.push(p);
-      })
-    }, 100);
+        }
+      }).catch((err) => {});
+    }, 50);
   });
 }
 
@@ -149,7 +155,7 @@ function switchMap(n) {
            conn.command(`map ${getMapName(n)}`)
             .then(() => {
               log.info(`Switching to ${getMapName(n)}`);
-              setTimeout(attemptScreenshot, 10000);
+              setTimeout(attemptScreenshot, 5000);
             })
             .catch((err) => {
               log.error('Failed to switch map. Exiting.');
@@ -164,7 +170,7 @@ function switchMap(n) {
         conn.command(`map ${getMapName(n)}`)
           .then(() => {
             log.info(`Switching to ${getMapName(n)}`);
-            setTimeout(attemptScreenshot, 10000);
+            setTimeout(attemptScreenshot, 5000);
           })
          .catch((err) => {
            log.error('Failed to switch map. Exiting.');
