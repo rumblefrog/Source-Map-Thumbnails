@@ -82,6 +82,7 @@ function attemptRconConnect() {
 }
 
 function attemptScreenshot() {
+  log.debug('Attempting to screenshot');
   new Promise((madeit, tooslow) => {
     setTimeout(() => {
       tooslow();
