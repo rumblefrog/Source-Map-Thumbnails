@@ -12,18 +12,15 @@ log.add(log.transports.Console, { level: config.debug_level, prettyPrint: true, 
 const RP = Math.random().toString(36).substring(2);
 
 const game = spawn(config.game_binary_location, [
-  `-game ${config.game}`,
+  `-game`, config.game,
   '-novid',
   '-usercon',
-  `+map ${config.starting_map}`,
-  `+rcon_password ${RP}`,
-  ... config.launch_options
+  `+map`, config.starting_map,
+  `+rcon_password`, RP,
+  ... [].concat(... config.launch_options.map(o => o.split(' ')))
 ]);
 
-game.stdout.on('data', (data) => {
-  console.log(`stdout: ${data}`);
-});
-
 game.on('close', (code) => {
-  console.log(`child process exited with code ${code}`);
+  log.info('Game has exited, terminating script');
+  process.exit(0);
 });
