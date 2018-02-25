@@ -2,12 +2,27 @@ const spawn = require('child_process').spawn
     , config = require('./config.json')
     , rcon = require('rcon')
     , log = require('winston')
+    , chokidar = require('chokidar')
+    , path = require('path')
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
 log.remove(log.transports.Console);
 
 log.add(log.transports.Console, { level: config.debug_level, prettyPrint: true, colorize: true, timestamp: true });
+
+const maps = [];
+
+let index = 0;
+
+glob('maps/*.bsp', (err, files) => {
+  if (err) {
+    log.error('Failed to load maps directory, terminating')
+    process.exit(1);
+  }
+
+  files.forEach(file => maps.push(path.basename(file, '.bsp')));
+});
 
 const RP = Math.random().toString(36).substring(2);
 
@@ -30,7 +45,7 @@ conn.on('auth', () => {
 
 conn.on('error', (err) => {
 
-  log.debug('Failed to connect, retrying in 30 seconds')
+  log.warn('Failed to connect, retrying in 30 seconds')
 
   setTimeout(() => {
     conn.connect();
@@ -39,6 +54,12 @@ conn.on('error', (err) => {
 })
 
 conn.connect();
+
+const watcher = chokidar.watch(config.screenshot_directory);
+
+watcher.on('add', (path) => {
+  log.info(`Screenshotted ${maps[index]}`)
+})
 
 game.on('close', (code) => {
   log.info('Game has exited, terminating script');
