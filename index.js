@@ -83,57 +83,60 @@ function attemptRconConnect() {
 
 function attemptScreenshot() {
   log.debug('Attempting to screenshot');
-  new Promise((madeit, tooslow) => {
-    setTimeout(() => {
-      tooslow();
-    }, 5000);
-    conn.command('status')
-      .then((status) => {
-        const m = status.match(/map\s+:\s([A-z0-9]+)/)[1];
-        if (m == getMapName(index)) {
-          return new Promise((resolve, reject) => {
-            processWindows.focusWindow(game.pid);
-            setTimeout(() => {
-              robotjs.keyTap('enter');
+  Promise.race([
+    new Promise((madeit, tooslow) => {
+      conn.command('status')
+        .then((status) => {
+          const m = status.match(/map\s+:\s([A-z0-9]+)/)[1];
+          log.debug(m, getMapName(index));
+          if (m == getMapName(index)) {
+            return new Promise((resolve, reject) => {
+              processWindows.focusWindow(game.pid);
               setTimeout(() => {
                 robotjs.keyTap('enter');
                 setTimeout(() => {
-                  robotjs.keyTap('2');
-                  resolve();
+                  robotjs.keyTap('enter');
+                  setTimeout(() => {
+                    robotjs.keyTap('2');
+                    resolve();
+                  }, 500)
                 }, 500)
-              }, 500)
-            });
-          })
-        } else
-          tooslow();
-      })
-      .then(() => conn.command('sv_cheats 1'))
-      .then(() => conn.command('cl_drawhud 0'))
-      .then(() => getNodes())
-      .then((count) => {
-        return new Promise((resolve, reject) => {
+              });
+            })
+          } else
+            tooslow();
+        })
+        .then(() => conn.command('sv_cheats 1'))
+        .then(() => conn.command('cl_drawhud 0'))
+        .then(() => getNodes())
+        .then((count) => {
           madeit();
-          let i = 1;
-          const iter = setInterval(() => {
-            if (i > count) {
-              clearInterval(iter);
-              resolve(count);
-            } else {
-              i++;
-              conn.command('jpeg')
-                .then((o) => conn.command('spec_next'))
-                .catch((err) => {});
-            }
-          }, 100);
-        });
-      })
-      .then((count) => {
-        log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
-        if (index + 1 <= maps.length - 1)
-          switchMap(++index);
-      })
-      .catch((err) => {})
-  }).then(() => {}).catch((err) => setTimeout(attemptScreenshot, 5000))
+          return new Promise((resolve, reject) => {
+            let i = 1;
+            const iter = setInterval(() => {
+              if (i > count) {
+                clearInterval(iter);
+                resolve(count);
+              } else {
+                i++;
+                conn.command('jpeg')
+                  .then((o) => conn.command('spec_next'))
+                  .catch((err) => {});
+              }
+            }, 100);
+          });
+        })
+        .then((count) => {
+          log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
+          if (index + 1 <= maps.length - 1)
+            switchMap(++index);
+        })
+        .catch((err) => {})
+    }),
+    new Promise((resolve, reject) => {
+      setTimeout(reject, 5000);
+    })
+  ]).then(() => {}).catch(() => setTimeout(attemptScreenshot, 5000));
 }
 
 function getNodes() {
