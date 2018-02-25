@@ -82,26 +82,29 @@ function attemptRconConnect() {
 }
 
 function attemptScreenshot() {
-  log.info('Attempting to screenshot ...');
   new Promise((madeit, tooslow) => {
     setTimeout(() => {
       tooslow();
     }, 5000);
     conn.command('status')
-      .then(() => {
-        return new Promise((resolve, reject) => {
-          processWindows.focusWindow(game.pid);
-          setTimeout(() => {
-            robotjs.keyTap('enter');
+      .then((status) => {
+        const m = status.match(/map\s+:\s([A-z0-9]+)/)[1];
+        if (m == getMapName(index)) {
+          return new Promise((resolve, reject) => {
+            processWindows.focusWindow(game.pid);
             setTimeout(() => {
               robotjs.keyTap('enter');
               setTimeout(() => {
-                robotjs.keyTap('2');
-                resolve();
+                robotjs.keyTap('enter');
+                setTimeout(() => {
+                  robotjs.keyTap('2');
+                  resolve();
+                }, 500)
               }, 500)
-            }, 500)
-          });
-        })
+            });
+          })
+        } else
+          tooslow();
       })
       .then(() => conn.command('sv_cheats 1'))
       .then(() => conn.command('cl_drawhud 0'))
@@ -125,6 +128,8 @@ function attemptScreenshot() {
       })
       .then((count) => {
         log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
+        if (index + 1 <= maps.length - 1)
+          switchMap(++index);
       })
       .catch((err) => {})
   }).then(() => {}).catch((err) => setTimeout(attemptScreenshot, 5000))
