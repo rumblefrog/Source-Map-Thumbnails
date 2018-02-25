@@ -20,6 +20,26 @@ const game = spawn(config.game_binary_location, [
   ... [].concat(... config.launch_options.map(o => o.split(' ')))
 ]);
 
+log.info('Launching game ...');
+
+const conn = new rcon('127.0.0.1', 27015, RP);
+
+conn.on('auth', () => {
+  log.info('Successfully connected to game');
+})
+
+conn.on('error', (err) => {
+
+  log.debug('Failed to connect, retrying in 30 seconds')
+
+  setTimeout(() => {
+    conn.connect();
+  }, 30000);
+
+})
+
+conn.connect();
+
 game.on('close', (code) => {
   log.info('Game has exited, terminating script');
   process.exit(0);
