@@ -111,20 +111,7 @@ function attemptScreenshot() {
         .then(() => getNodes())
         .then((count) => {
           madeit();
-          return new Promise((resolve, reject) => {
-            let i = 1;
-            const iter = setInterval(() => {
-              if (i > count) {
-                clearInterval(iter);
-                resolve(count);
-              } else {
-                i++;
-                conn.command('jpeg')
-                  .then((o) => conn.command('spec_next'))
-                  .catch((err) => {});
-              }
-            }, 100);
-          });
+          return repeat(screenshot, count);
         })
         .then((count) => {
           log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
@@ -137,6 +124,16 @@ function attemptScreenshot() {
       setTimeout(reject, 5000);
     })
   ]).then(() => {}).catch(() => setTimeout(attemptScreenshot, 5000));
+}
+
+function repeat(func, times) {
+  var promise = Promise.resolve(times);
+  while (times-- > 0) promise = promise.then(func);
+  return promise;
+}
+
+function screenshot() {
+    return conn.command('jpeg;spec_next');
 }
 
 function getNodes() {
@@ -156,37 +153,39 @@ function getNodes() {
 }
 
 function switchMap(n) {
-  checkFileExists(maps[n])
-    .then((exist) => {
-      if (!exist) {
-        copyToMaps(n)
-         .then(() => {
-           conn.command(`map ${getMapName(n)}`)
-            .then(() => {
-              log.info(`Switching to ${getMapName(n)}`);
-              setTimeout(attemptScreenshot, 5000);
+  Promise.race([
+    new Promise((resolve, reject) => {
+      checkFileExists(maps[n])
+        .then((exist) => {
+          resolve();
+          if (!exist) {
+            copyToMaps(n)
+              .then(() => conn.command(`map ${getMapName(n)}`))
+              .then(() => {
+                log.info(`Switching to ${getMapName(n)}`);
+                setTimeout(attemptScreenshot, 5000);
+              })
+              .catch((err) => {
+                log.error(`Failed to switch map. Exiting.`);
+                process.exit(1);
             })
-            .catch((err) => {
-              log.error('Failed to switch map. Exiting.');
-              process.exit(1);
-            });
-         })
-         .catch((err) => {
-           log.error(`Failed to copy map: ${err}. Exiting.`);
-           process.exit(1);
-         })
-      } else {
-        conn.command(`map ${getMapName(n)}`)
-          .then(() => {
-            log.info(`Switching to ${getMapName(n)}`);
-            setTimeout(attemptScreenshot, 5000);
-          })
-         .catch((err) => {
-           log.error('Failed to switch map. Exiting.');
-           process.exit(1);
-         });
-      }
-    });
+          } else {
+            conn.command(`map ${getMapName(n)}`)
+              .then(() => {
+                log.info(`Switching to ${getMapName(n)}`);
+                setTimeout(attemptScreenshot, 5000);
+              })
+             .catch((err) => {
+               log.error('Failed to switch map. Exiting.');
+               process.exit(1);
+             });
+          }
+        })
+    }),
+    new Promise((resolve, reject) => {
+      setTimeout(reject, 5000);
+    })
+  ]).then(() => {}).catch(() => switchMap(n));
 }
 
 function copyToMaps(n) {
@@ -204,7 +203,7 @@ function getMapName(n) {
 
 function checkFileExists(filepath){
   return new Promise((resolve, reject) => {
-    fs.access(filepath, fs.F_OK, error => {
+    fs.access(filepath, fs.F_OK, (error) => {
       resolve(!error);
     });
   });
