@@ -7,9 +7,10 @@
   "author": "RumbleFrog <xxlosttechxx@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chokidar": "^2.0.2",
     "glob": "^7.1.2",
     "ip": "^1.1.5",
+    "node-process-windows": "^0.0.2",
+    "robotjs": "^0.4.7",
     "srcds-rcon": "^2.2.1",
     "winston": "^2.4.0"
   }

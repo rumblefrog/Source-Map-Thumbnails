@@ -3,10 +3,11 @@ const spawn = require('child_process').spawn
     , ip = require('ip')
     , rcon = require('srcds-rcon')
     , log = require('winston')
-    , chokidar = require('chokidar')
     , glob = require('glob')
     , path = require('path')
     , fs = require('fs')
+    , processWindows = require('node-process-windows')
+    , robotjs = require('robotjs')
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
@@ -60,12 +61,6 @@ const conn = rcon({
 
 setTimeout(attemptRconConnect, 120000);
 
-const watcher = chokidar.watch(game_dir + 'screenshots', {ignored: /(^|[\/\\])\../});
-
-watcher.on('add', (path) => {
-  log.info(`Screenshotted ${getMapName(index)}`);
-})
-
 game.on('close', (code) => {
   log.info('Game has exited, terminating script');
   process.exit(0);
@@ -88,14 +83,61 @@ function attemptRconConnect() {
 
 function attemptScreenshot() {
   conn.command('status')
-    .then(() => conn.command('jpeg'))
-    .then(() => log.info(`Screenshotted ${getMapName(index)}`))
+    .then(() => {
+      processWindows.focusWindow(game.pid);
+      setTimeout(() => {
+        robotjs.keyTap('enter');
+        setTimeout(() => {
+          robotjs.keyTap('enter');
+          setTimeout(() => {
+            robotjs.keyTap('2');
+            return conn.command('cl_drawhud 0');
+          }, 500)
+        }, 500)
+      }, 500)
+    })
+    .then(() => {
+      return getNodes();
+    })
+    .then((count) => {
+      return new Promise((resolve, reject) => {
+        let i = 1;
+        const iter = setInterval(() => {
+          if (i >= count) {
+            clearInterval(iter);
+            resolve(count);
+          } else {
+            i++;
+            conn.command('jpeg')
+              .then(() => conn.command('spec_next'));
+          }
+        }, 100);
+      });
+    })
+    .then((count) => {
+      log.info(`Screenshotted ${getMapName(index)} in ${count} spectator nodes`);
+    })
     .catch((err) => {
       log.debug(err);
       log.warn('Failed to take screenshot, retrying in 5 seconds');
 
       setTimeout(attemptScreenshot, 5000);
     })
+}
+
+function getNodes() {
+  return new Promise((resolve, reject) => {
+    const pos = [];
+    const iter = setInterval(() => {
+      conn.command('spec_pos').them((p) => {
+        if (pos.includes(p)) {
+          clearInterval(iter);
+          resolve(pos.length);
+        } else
+          pos.push(p);
+      })
+    }, 100);
+  });
 }
 
 function switchMap(n) {
