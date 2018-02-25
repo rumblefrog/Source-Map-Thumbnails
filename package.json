@@ -7,6 +7,7 @@
   "author": "RumbleFrog <xxlosttechxx@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "rcon": "^1.0.3"
+    "rcon": "^1.0.3",
+    "winston": "^2.4.0"
   }
 }
