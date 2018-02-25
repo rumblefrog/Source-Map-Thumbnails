@@ -14,7 +14,9 @@ log.remove(log.transports.Console);
 
 log.add(log.transports.Console, { level: config.debug_level, prettyPrint: true, colorize: true, timestamp: true });
 
-const maps = [];
+let game_dir = config.game_directory.endsWith("/") ? "" : "/"
+
+let maps = [];
 
 let index = 0;
 
@@ -76,10 +78,10 @@ setInterval(() => {
   conn.connect();
 }, 120000);
 
-const watcher = chokidar.watch(config.screenshot_directory);
+const watcher = chokidar.watch(game_dir + 'screenshots', {ignored: /(^|[\/\\])\../});
 
-watcher.on('add', (path) => {
-  log.info(`Screenshotted ${maps[index]}`)
+watcher.on('new-file', (path) => {
+  log.info(`Screenshotted ${getMapName(index)}`);
 })
 
 game.on('close', (code) => {
@@ -106,12 +108,15 @@ function switchMap(n) {
 
 function copyToMaps(n) {
   return new Promise((resolve, reject) => {
-    const dir = config.maps_directory.endsWith("/") ? "" : "/"
-    fs.copyFile(map[n], `${dir}${path.basename(map[n], '.bsp')}`, (err) => {
+    fs.copyFile(map[n], `${game_dir}maps/${getMapName(n)}.bsp`, (err) => {
       if (err) return reject(err);
       else resolve();
     })
   });
+}
+
+function getMapName(n) {
+  return path.basename(maps[n], '.bsp');
 }
 
 function checkFileExists(filepath){
