@@ -5,4 +5,4 @@ node_modules/
 *.bsp
 
 # Config
-#config.json
+config.json
