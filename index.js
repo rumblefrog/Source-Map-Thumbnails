@@ -33,7 +33,7 @@ glob('maps/*.bsp', (err, files) => {
     process.exit(0);
   }
 
-  log.info(`Fetched ${maps.length} maps`);
+  log.info(`Queued ${maps.length} maps`);
 });
 
 const RP = Math.random().toString(36).substring(2);
@@ -58,7 +58,7 @@ const conn = rcon({
   password: RP
 });
 
-setInterval(attemptRconConnect, 120000);
+setTimeout(attemptRconConnect, 120000);
 
 const watcher = chokidar.watch(game_dir + 'screenshots', {ignored: /(^|[\/\\])\../});
 
@@ -88,8 +88,8 @@ function attemptRconConnect() {
 
 function attemptScreenshot() {
   conn.command('status')
-    .then(() => conn.command('jpeg'))
-    .then(() => log.info(`Screenshotted ${getMapName(index)}`))
+    .then(() => conn.command('jpeg')
+    .then(() => log.info(`Screenshotted ${getMapName(index)}`)))
     .catch((err) => {
       log.debug(err);
       log.warn('Failed to take screenshot, retrying in 5 seconds');
@@ -107,7 +107,7 @@ function switchMap(n) {
            conn.command(`map ${getMapName(n)}`)
             .then(() => {
               log.info(`Switching to ${getMapName(n)}`);
-              setTimeout(attemptScreenshot, 5000);
+              setTimeout(attemptScreenshot, 10000);
             })
             .catch((err) => {
               log.error('Failed to switch map. Exiting.');
@@ -122,7 +122,7 @@ function switchMap(n) {
         conn.command(`map ${getMapName(n)}`)
           .then(() => {
             log.info(`Switching to ${getMapName(n)}`);
-            setTimeout(attemptScreenshot, 5000);
+            setTimeout(attemptScreenshot, 10000);
           })
          .catch((err) => {
            log.error('Failed to switch map. Exiting.');
