@@ -82,10 +82,28 @@ function attemptRconConnect() {
       log.debug(err);
       log.warn('Failed to connect, retrying in 30 seconds')
 
-      setTimeout(() => {
-        attemptRconConnect();
-      }, 30000);
+      setTimeout(attemptRconConnect, 30000);
     });
+}
+
+function attemptScreenshot() {
+  conn.command('status')
+    .then(() => {
+      conn.command('screenshot')
+        .then(() => {})
+        .catch((err) => {
+          log.debug(err);
+          log.warn('Failed to take screenshot, retrying in 5 seconds');
+
+          setTimeout(attemptScreenshot, 5000);
+        });
+    })
+    .catch((err) => {
+      log.debug(err);
+      log.warn('Failed to take screenshot, retrying in 5 seconds');
+
+      setTimeout(attemptScreenshot, 5000);
+    })
 }
 
 function switchMap(n) {
@@ -95,7 +113,10 @@ function switchMap(n) {
         copyToMaps(n)
          .then(() => {
            conn.command(`map ${getMapName(n)}`)
-            .then(() => log.info(`Switching to ${getMapName(n)}`))
+            .then(() => {
+              log.info(`Switching to ${getMapName(n)}`);
+              setTimeout(attemptScreenshot, 5000);
+            })
             .catch((err) => {
               log.error('Failed to switch map. Exiting.');
               process.exit(1);
@@ -107,7 +128,10 @@ function switchMap(n) {
          })
       } else {
         conn.command(`map ${getMapName(n)}`)
-         .then(() => log.info(`Switching to ${getMapName(n)}`))
+          .then(() => {
+            log.info(`Switching to ${getMapName(n)}`);
+            setTimeout(attemptScreenshot, 5000);
+          })
          .catch((err) => {
            log.error('Failed to switch map. Exiting.');
            process.exit(1);
