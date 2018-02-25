@@ -78,7 +78,7 @@ setInterval(() => {
 
 const watcher = chokidar.watch(game_dir + 'screenshots', {ignored: /(^|[\/\\])\../});
 
-watcher.on('new-file', (path) => {
+watcher.on('add', (path) => {
   log.info(`Screenshotted ${getMapName(index)}`);
 })
 
@@ -93,14 +93,17 @@ function switchMap(n) {
       if (!exist) {
         copyToMaps(n)
          .then(() => {
-           conn.send(`map ${maps[n]}`);
+           log.info(`Switching to ${getMapName(n)}`);
+           conn.send(`map ${getMapName(n)}`);
          })
          .catch((err) => {
            log.error(`Failed to copy map: ${err}. Exiting.`);
            process.exit(1);
          })
-      } else
-        conn.send(`map ${maps[n]}`);
+      } else {
+        log.info(`Switching to ${getMapName(n)}`);
+        conn.send(`map ${getMapName(n)}`);
+      }
     });
 }
 
