@@ -6,6 +6,7 @@ const spawn = require('child_process').spawn
     , chokidar = require('chokidar')
     , glob = require('glob')
     , path = require('path')
+    , fs = require('fs')
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
@@ -23,7 +24,16 @@ glob('maps/*.bsp', (err, files) => {
     process.exit(1);
   }
 
-  files.forEach(file => maps.push(path.basename(file, '.bsp')));
+  maps = files;
+
+  //files.forEach(file => maps.push(path.basename(file, '.bsp')));
+
+  if (maps.length <= 0) {
+    log.error('Maps directory empty, load some maps first!');
+    process.exit(0);
+  }
+
+  log.info(`Fetched ${maps.length} maps`);
 });
 
 const RP = Math.random().toString(36).substring(2);
@@ -48,7 +58,19 @@ const conn = new rcon(ip.address(), 27015, RP);
 conn.on('auth', () => {
   log.info('Successfully connected to game, switching to first map ...');
 
-  conn.send(`map ${maps[index]}`);
+  checkFileExists(maps[index])
+    .then((exist) => {
+      if (!exist) {
+        copyToMaps(index)
+         .then(() => {
+           conn.send(`map ${maps[index]}`);
+         })
+         .catch((err) => {
+           log.error(`Failed to copy map: ${err}. Exiting.`);
+           process.exit(1);
+         })
+      }
+    });
 })
 
 conn.on('error', (err) => {
@@ -76,3 +98,21 @@ game.on('close', (code) => {
   log.info('Game has exited, terminating script');
   process.exit(0);
 });
+
+function copyToMaps(n) {
+  return new Promise((resolve, reject) => {
+    const dir = config.maps_directory.endsWith("/") ? "" : "/"
+    fs.copyFile(map[n], `${dir}${path.basename(map[n], '.bsp')}`, (err) => {
+      if (err) return reject(err);
+      else resolve();
+    })
+  });
+}
+
+function checkFileExists(filepath){
+  return new Promise((resolve, reject) => {
+    fs.access(filepath, fs.F_OK, error => {
+      resolve(!error);
+    });
+  });
+}

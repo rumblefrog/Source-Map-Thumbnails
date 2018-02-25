@@ -1,7 +1,8 @@
 {
   "game": "tf",
   "game_binary_location": "D:/SteamLibrary/steamapps/common/Team Fortress 2/hl2.exe",
-  "screenshot_directory": "D:/SteamLibrary/steamapps/common/Team Fortress 2\tf/screenshots",
+  "maps_directory": "D:/SteamLibrary/steamapps/common/Team Fortress 2/tf/screenshots",
+  "screenshot_directory": "D:/SteamLibrary/steamapps/common/Team Fortress 2/tf/maps",
   "starting_map": "ctf_2fort",
   "debug_level": "debug",
   "launch_options": [
