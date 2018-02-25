@@ -85,11 +85,13 @@ function attemptScreenshot() {
   log.debug('Attempting to screenshot');
   Promise.race([
     new Promise((madeit, tooslow) => {
+      log.debug('Sent status command');
       conn.command('status')
         .then((status) => {
-          const m = status.match(/map\s+:\s([A-z0-9]+)/)[1];
-          log.debug(m, getMapName(index));
-          if (m == getMapName(index)) {
+          const m = status.match(/map\s+:\s([A-z0-9]+)/i)[1];
+          const cstate = status.match('/#.* +([0-9]+) +"(.+)" +(STEAM_[0-9]:[0-9]:[0-9]+|\[U:[0-9]:[0-9]+\]) +([0-9:]+) +([0-9]+) +([0-9]+) +([a-zA-Z]+).* +([0-9.:]+)/i')[7];
+          log.debug(m, getMapName(index), cstate);
+          if (m == getMapName(index) && cstate == 'active') {
             return new Promise((resolve, reject) => {
               processWindows.focusWindow(game.pid);
               setTimeout(() => {
@@ -111,8 +113,8 @@ function attemptScreenshot() {
         .then(() => getNodes())
         .then((count) => {
           madeit();
-          repeat(screenshot, count)
-            .then((count) => {
+          screenshot(count)
+            .then((times) => {
               log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
               if (index + 1 <= maps.length - 1)
                 switchMap(++index);
@@ -126,21 +128,18 @@ function attemptScreenshot() {
   ]).then(() => {}).catch(() => setTimeout(attemptScreenshot, 5000));
 }
 
-function repeat(func, times) {
-  var promise = Promise.resolve(times);
-  while (times-- > 0) promise = promise.then(func);
-  return promise;
-}
-
-function screenshot() {
-    return conn.command('jpeg;spec_next');
+async function screenshot(times) {
+  for (var i = 1; i < times; i++) {
+    await conn.command('jpeg;spec_next');
+  }
+  return;
 }
 
 async function getNodes() {
   let going = true;
   const pos = [];
   while (going) {
-    let p = await conn.command('spec_pos;spec_ext');
+    let p = await conn.command('spec_pos;spec_next');
     if (pos.includes(p)) {
       going = false;
       return pos.length;
@@ -150,6 +149,7 @@ async function getNodes() {
 }
 
 function switchMap(n) {
+  log.debug('switchMap');
   Promise.race([
     new Promise((resolve, reject) => {
       checkFileExists(maps[n])
@@ -163,18 +163,18 @@ function switchMap(n) {
                 setTimeout(attemptScreenshot, 5000);
               })
               .catch((err) => {
-                log.error(`Failed to switch map. Exiting.`);
-                process.exit(1);
+                log.warn(`Failed to switch map. Retrying.`);
+                switchMap(n);
             })
           } else {
             conn.command(`map ${getMapName(n)}`)
-              .then(() => {
-                log.info(`Switching to ${getMapName(n)}`);
-                setTimeout(attemptScreenshot, 5000);
-              })
+             .then(() => {
+               log.info(`Switching to ${getMapName(n)}`);
+               setTimeout(attemptScreenshot, 5000);
+             })
              .catch((err) => {
-               log.error('Failed to switch map. Exiting.');
-               process.exit(1);
+               log.warn(`Failed to switch map. Retrying.`);
+               switchMap(n);
              });
           }
         })
