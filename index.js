@@ -28,8 +28,6 @@ glob('maps/*.bsp', (err, files) => {
 
   maps = files;
 
-  //files.forEach(file => maps.push(path.basename(file, '.bsp')));
-
   if (maps.length <= 0) {
     log.error('Maps directory empty, load some maps first!');
     process.exit(0);
