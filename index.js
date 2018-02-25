@@ -111,12 +111,12 @@ function attemptScreenshot() {
         .then(() => getNodes())
         .then((count) => {
           madeit();
-          return repeat(screenshot, count);
-        })
-        .then((count) => {
-          log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
-          if (index + 1 <= maps.length - 1)
-            switchMap(++index);
+          repeat(screenshot, count)
+            .then((count) => {
+              log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
+              if (index + 1 <= maps.length - 1)
+                switchMap(++index);
+            }).catch((err) => {});
         })
         .catch((err) => {})
     }),
