@@ -136,20 +136,17 @@ function screenshot() {
     return conn.command('jpeg;spec_next');
 }
 
-function getNodes() {
-  return new Promise((resolve, reject) => {
-    const pos = [];
-    const iter = setInterval(() => {
-      conn.command('spec_pos;spec_next').then((p) => {
-        if (pos.includes(p)) {
-          clearInterval(iter);
-          resolve(pos.length);
-        } else {
-          pos.push(p);
-        }
-      }).catch((err) => {});
-    }, 50);
-  });
+async function getNodes() {
+  let going = true;
+  const pos = [];
+  while (going) {
+    let p = await conn.command('spec_pos;spec_ext');
+    if (pos.includes(p)) {
+      going = false;
+      return pos.length;
+    } else
+      pos.push(p);
+  }
 }
 
 function switchMap(n) {
