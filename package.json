@@ -10,7 +10,7 @@
     "chokidar": "^2.0.2",
     "glob": "^7.1.2",
     "ip": "^1.1.5",
-    "srcds-rcon": "randunel/node-srcds-rcon",
+    "srcds-rcon": "^2.2.1",
     "winston": "^2.4.0"
   }
 }

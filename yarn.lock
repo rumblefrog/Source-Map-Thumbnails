@@ -1163,9 +1163,9 @@ split-string@^3.0.1, split-string@^3.0.2:
   dependencies:
     extend-shallow "^3.0.0"
 
-srcds-rcon@randunel/node-srcds-rcon:
+srcds-rcon@^2.2.1:
   version "2.2.1"
-  resolved "https://codeload.github.com/randunel/node-srcds-rcon/tar.gz/5c285a90cdd8eec8202f66c69009b642d91aa076"
+  resolved "https://registry.yarnpkg.com/srcds-rcon/-/srcds-rcon-2.2.1.tgz#6fb01928420addda2b87d97e31a0d607e9ab8027"
 
 sshpk@^1.7.0:
   version "1.13.1"

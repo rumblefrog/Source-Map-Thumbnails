@@ -53,7 +53,7 @@ log.info(`Session RCON Password: ${RP}`)
 log.info('Launching game ...');
 log.info('Allowing up to 120 seconds before connection attempt');
 
-const conn = new rcon({
+const conn = rcon({
   address: ip.address(),
   password: RP
 });
@@ -72,7 +72,7 @@ game.on('close', (code) => {
 });
 
 function attemptRconConnect() {
-  rcon.connect()
+  conn.connect()
     .then(() => {
       log.info('Successfully connected to game, switching to first map ...');
 
