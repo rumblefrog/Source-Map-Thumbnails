@@ -94,16 +94,24 @@ function switchMap(n) {
       if (!exist) {
         copyToMaps(n)
          .then(() => {
-           log.info(`Switching to ${getMapName(n)}`);
-           conn.send(`map ${getMapName(n)}`);
+           conn.command(`map ${getMapName(n)}`)
+            .then(() => log.info(`Switching to ${getMapName(n)}`))
+            .catch((err) => {
+              log.error('Failed to switch map. Exiting.');
+              process.exit(1);
+            });
          })
          .catch((err) => {
            log.error(`Failed to copy map: ${err}. Exiting.`);
            process.exit(1);
          })
       } else {
-        log.info(`Switching to ${getMapName(n)}`);
-        conn.send(`map ${getMapName(n)}`);
+        conn.command(`map ${getMapName(n)}`)
+         .then(() => log.info(`Switching to ${getMapName(n)}`))
+         .catch((err) => {
+           log.error('Failed to switch map. Exiting.');
+           process.exit(1);
+         });
       }
     });
 }
