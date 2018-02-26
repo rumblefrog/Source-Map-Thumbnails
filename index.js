@@ -52,14 +52,14 @@ const game = spawn(config.game_binary_location, [
 
 log.info(`Session RCON Password: ${RP}`)
 log.info('Launching game ...');
-log.info('Allowing up to 120 seconds before connection attempt');
+log.info('Allowing up to 80 seconds before connection attempt');
 
 const conn = rcon({
   address: ip.address(),
   password: RP
 });
 
-setTimeout(attemptRconConnect, 60000); //Switch back to 120
+setTimeout(attemptRconConnect, 80000);
 
 game.on('close', (code) => {
   log.info('Game has exited, terminating script');
@@ -81,58 +81,78 @@ function attemptRconConnect() {
     });
 }
 
+function prepGame() {
+  return new Promise((resolve, reject) => {
+    log.debug('Sent status command');
+
+    conn.command('status')
+      .then((status) => {
+        const m = status.match(/map\s+:\s([A-z0-9]+)/i)[1];
+        const cstate = status.match(/#.* +([0-9]+) +"(.+)" +(STEAM_[0-9]:[0-9]:[0-9]+|\[U:[0-9]:[0-9]+\]) +([0-9:]+) +([0-9]+) +([0-9]+) +([a-zA-Z]+).* +([A-z0-9.:]+)/i)[7];
+
+        if (m == getMapName(index) && cstate == 'active') {
+          processWindows.focusWindow(game.pid);
+
+          setTimeout(() => {
+            robotjs.keyTap('enter');
+
+            setTimeout(() => {
+              robotjs.keyTap('enter');
+
+              setTimeout(() => {
+                robotjs.keyTap('2');
+
+                resolve();
+              }, 100)
+
+            }, 100)
+
+          }, 500)
+        } else
+          reject();
+      })
+
+  })
+}
+
 function attemptScreenshot() {
   log.debug('Attempting to screenshot');
   Promise.race([
     new Promise((madeit, tooslow) => {
-      log.debug('Sent status command');
-      conn.command('status')
-        .then((status) => {
-          const m = status.match(/map\s+:\s([A-z0-9]+)/i)[1];
-          const cstate = status.match('/#.* +([0-9]+) +"(.+)" +(STEAM_[0-9]:[0-9]:[0-9]+|\[U:[0-9]:[0-9]+\]) +([0-9:]+) +([0-9]+) +([0-9]+) +([a-zA-Z]+).* +([0-9.:]+)/i')[7];
-          log.debug(m, getMapName(index), cstate);
-          if (m == getMapName(index) && cstate == 'active') {
-            return new Promise((resolve, reject) => {
-              processWindows.focusWindow(game.pid);
-              setTimeout(() => {
-                robotjs.keyTap('enter');
-                setTimeout(() => {
-                  robotjs.keyTap('enter');
-                  setTimeout(() => {
-                    robotjs.keyTap('2');
-                    resolve();
-                  }, 500)
-                }, 500)
-              });
-            })
-          } else
-            tooslow();
-        })
+      prepGame()
         .then(() => conn.command('sv_cheats 1'))
         .then(() => conn.command('cl_drawhud 0'))
         .then(() => getNodes())
         .then((count) => {
           madeit();
-          screenshot(count)
-            .then((times) => {
-              log.info(`Screenshotted ${getMapName(index)} with ${count} spectator nodes`);
-              if (index + 1 <= maps.length - 1)
-                switchMap(++index);
-            }).catch((err) => {});
+          return screenshot(count);
         })
-        .catch((err) => {})
+        .then((times) => {
+          log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
+          if (index + 1 <= maps.length - 1)
+            switchMap(++index);
+        })
+        .catch(() => {})
     }),
     new Promise((resolve, reject) => {
       setTimeout(reject, 5000);
     })
-  ]).then(() => {}).catch(() => setTimeout(attemptScreenshot, 5000));
+  ]).then(() => {}).catch(() => {
+    log.debug('Retrying screenshot');
+    setTimeout(attemptScreenshot, 5000)
+  });
 }
 
 async function screenshot(times) {
-  for (var i = 1; i < times; i++) {
+  for (var i = 1; i <= times; i++) {
     await conn.command('jpeg;spec_next');
+    await timeout(100);
   }
-  return;
+  return times;
+}
+
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function getNodes() {
@@ -145,6 +165,7 @@ async function getNodes() {
       return pos.length;
     } else
       pos.push(p);
+    await timeout(100);
   }
 }
 
@@ -157,20 +178,20 @@ function switchMap(n) {
           resolve();
           if (!exist) {
             copyToMaps(n)
-              .then(() => conn.command(`map ${getMapName(n)}`))
+              .then(() => conn.command(`changelevel ${getMapName(n)}`, 1000))
               .then(() => {
                 log.info(`Switching to ${getMapName(n)}`);
-                setTimeout(attemptScreenshot, 5000);
+                setTimeout(attemptScreenshot, 10000);
               })
               .catch((err) => {
                 log.warn(`Failed to switch map. Retrying.`);
                 switchMap(n);
             })
           } else {
-            conn.command(`map ${getMapName(n)}`)
+            conn.command(`changelevel ${getMapName(n)}`, 1000)
              .then(() => {
                log.info(`Switching to ${getMapName(n)}`);
-               setTimeout(attemptScreenshot, 5000);
+               setTimeout(attemptScreenshot, 10000);
              })
              .catch((err) => {
                log.warn(`Failed to switch map. Retrying.`);
