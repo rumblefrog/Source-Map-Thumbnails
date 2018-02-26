@@ -112,7 +112,7 @@ function prepGame() {
           reject();
       })
 
-  }).catch(() => {});
+  }).catch(err => reject(err));
 }
 
 function attemptScreenshot() {
@@ -132,6 +132,10 @@ function attemptScreenshot() {
           log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
           if (index + 1 <= maps.length - 1)
             switchMap(++index);
+          else {
+            log.info(`Processed ${maps.length} maps. Exiting.`);
+            process.exit(0);
+          }
         })
         .catch(() => {})
     }),
