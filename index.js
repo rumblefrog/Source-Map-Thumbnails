@@ -112,7 +112,7 @@ function prepGame() {
           reject();
       })
 
-  })
+  }).catch(() => {});
 }
 
 function attemptScreenshot() {
@@ -122,6 +122,7 @@ function attemptScreenshot() {
       prepGame()
         .then(() => conn.command('sv_cheats 1'))
         .then(() => conn.command('cl_drawhud 0'))
+        .then(() => conn.command('spec_mode'))
         .then(() => getNodes())
         .then((count) => {
           madeit();
@@ -185,7 +186,9 @@ function switchMap(n) {
               })
               .catch((err) => {
                 log.warn(`Failed to switch map. Retrying.`);
-                switchMap(n);
+                setTimeout(() => {
+                  switchMap(n);
+                }, 1000)
             })
           } else {
             conn.command(`changelevel ${getMapName(n)}`, 1000)
@@ -195,7 +198,9 @@ function switchMap(n) {
              })
              .catch((err) => {
                log.warn(`Failed to switch map. Retrying.`);
-               switchMap(n);
+               setTimeout(() => {
+                 switchMap(n);
+               }, 1000)
              });
           }
         })
