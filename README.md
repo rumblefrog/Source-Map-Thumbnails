@@ -1,6 +1,8 @@
-# Source Map Thumbnails
+# Source Map Thumbnails [Windows Only]
 
 Automate the creation of thumbnail within source games
+
+- Tested so far in TF2 only!
 
 ### Quickstart
 
