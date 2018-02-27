@@ -17,3 +17,5 @@ Automate the creation of thumbnail within source games
 - Nephyrin - Brought up the idea of listen server
 - KliPPy - Help point me in the right direction of listen server RCON
 - Makamoto - Corrected me on `cl_drawhud` and therefore removing platform specific code
+- Pelipoika - Answering my screenshot scaling question
+- Ron - Emotion support and suggestions
