@@ -111,15 +111,11 @@ function attemptScreenshot() {
         .then((times) => {
           madeit();
           log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
-          if (index + 1 <= maps.length - 1) {
-            setTimeout(() => {
-              switchMap(++index);
-            }, 1000)
-          } else {
+          if (index + 1 <= maps.length - 1)
+            switchMap(++index);
+          else {
             log.info(`Processed ${maps.length} maps. Exiting.`);
-            setTimeout(() => {
-              process.exit(0);
-            }, 2000);
+            process.exit(0);
           }
         })
         .catch(() => {})
@@ -138,10 +134,14 @@ function screenshot(times) {
     let command = '';
 
     for (var i = 1; i <= times; i++)
-      command += 'jpeg;spec_next;wait 33;';
+      command += 'jpeg;spec_next;wait 20;';
 
     conn.command(command)
-      .then(() => resolve(times))
+      .then(() => {
+        setTimeout(() => {
+          resolve(times);
+        }, times * 500)
+      })
       .catch(() => {});
   })
 }
@@ -164,6 +164,7 @@ async function getNodes() {
       await timeout(200);
     }
   } catch(e) {
+    log.debug('getNodes got lost');
     // Nothing, wait for main timeout
   }
 }
