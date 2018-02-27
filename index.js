@@ -90,8 +90,10 @@ function prepGame() {
 
         if (m == getMapName(index) && cstate == 'active')
           setTimeout(resolve, 1000);
-        else
+        else {
+          log.debug('map/status failed');
           reject();
+        }
       })
 
   }).catch(err => reject(err));
