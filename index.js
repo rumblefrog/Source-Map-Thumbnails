@@ -129,10 +129,13 @@ function attemptScreenshot() {
 }
 
 async function screenshot(times) {
-  for (var i = 1; i <= times; i++) {
-    await conn.command('jpeg;spec_next');
-    await timeout(200);
-  }
+  let command = '';
+  
+  for (var i = 1; i <= times; i++)
+    command += 'jpeg;spec_next;wait 33;';
+
+  await conn.command(command);
+
   return times;
 }
 
@@ -141,16 +144,20 @@ function timeout(ms) {
 }
 
 async function getNodes() {
-  let going = true;
-  const pos = [];
-  while (going) {
-    let p = await conn.command('spec_pos;spec_next');
-    if (pos.includes(p)) {
-      going = false;
-      return pos.length;
-    } else
-      pos.push(p);
-    await timeout(200);
+  try {
+    let going = true;
+    const pos = [];
+    while (going) {
+      let p = await conn.command('spec_pos;spec_next');
+      if (pos.includes(p)) {
+        going = false;
+        return pos.length;
+      } else
+        pos.push(p);
+      await timeout(200);
+    }
+  } catch(e) {
+    // Nothing, wait for main timeout
   }
 }
 
