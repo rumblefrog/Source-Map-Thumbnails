@@ -105,6 +105,7 @@ function attemptScreenshot() {
         .then(() => conn.command('sv_cheats 1'))
         .then(() => conn.command('cl_drawhud 0'))
         .then(() => conn.command('spec_mode'))
+        .then(() => conn.command('jpeg_quality 100'))
         .then(() => getNodes())
         .then((count) => screenshot(count))
         .then((times) => {
