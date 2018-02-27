@@ -6,8 +6,6 @@ const spawn = require('child_process').spawn
     , glob = require('glob')
     , path = require('path')
     , fs = require('fs')
-    , processWindows = require('node-process-windows')
-    , robotjs = require('robotjs')
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
@@ -90,25 +88,9 @@ function prepGame() {
         const m = status.match(/map\s+:\s([A-z0-9]+)/i)[1];
         const cstate = status.match(/#.* +([0-9]+) +"(.+)" +(STEAM_[0-9]:[0-9]:[0-9]+|\[U:[0-9]:[0-9]+\]) +([0-9:]+) +([0-9]+) +([0-9]+) +([a-zA-Z]+).* +([A-z0-9.:]+)/i)[7];
 
-        if (m == getMapName(index) && cstate == 'active') {
-          processWindows.focusWindow(game.pid);
-
-          setTimeout(() => {
-            robotjs.keyTap('enter');
-
-            setTimeout(() => {
-              robotjs.keyTap('enter');
-
-              setTimeout(() => {
-                robotjs.keyTap('2');
-
-                resolve();
-              }, 100)
-
-            }, 100)
-
-          }, 500)
-        } else
+        if (m == getMapName(index) && cstate == 'active')
+          setTimeout(resolve, 1000);
+        else
           reject();
       })
 
@@ -124,11 +106,9 @@ function attemptScreenshot() {
         .then(() => conn.command('cl_drawhud 0'))
         .then(() => conn.command('spec_mode'))
         .then(() => getNodes())
-        .then((count) => {
-          madeit();
-          return screenshot(count);
-        })
+        .then(count => screenshot(count))
         .then((times) => {
+          madeit();
           log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
           if (index + 1 <= maps.length - 1)
             switchMap(++index);
@@ -151,7 +131,7 @@ function attemptScreenshot() {
 async function screenshot(times) {
   for (var i = 1; i <= times; i++) {
     await conn.command('jpeg;spec_next');
-    await timeout(100);
+    await timeout(200);
   }
   return times;
 }
@@ -170,7 +150,7 @@ async function getNodes() {
       return pos.length;
     } else
       pos.push(p);
-    await timeout(100);
+    await timeout(200);
   }
 }
 
@@ -192,7 +172,7 @@ function switchMap(n) {
                 log.warn(`Failed to switch map. Retrying.`);
                 setTimeout(() => {
                   switchMap(n);
-                }, 1000)
+                }, 3000)
             })
           } else {
             conn.command(`changelevel ${getMapName(n)}`, 1000)
@@ -204,7 +184,7 @@ function switchMap(n) {
                log.warn(`Failed to switch map. Retrying.`);
                setTimeout(() => {
                  switchMap(n);
-               }, 1000)
+               }, 3000)
              });
           }
         })
@@ -235,3 +215,5 @@ function checkFileExists(filepath){
     });
   });
 }
+
+process.on('unhandledRejection', r => {});
