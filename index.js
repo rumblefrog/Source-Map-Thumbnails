@@ -106,15 +106,19 @@ function attemptScreenshot() {
         .then(() => conn.command('cl_drawhud 0'))
         .then(() => conn.command('spec_mode'))
         .then(() => getNodes())
-        .then(count => screenshot(count))
+        .then((count) => screenshot(count))
         .then((times) => {
           madeit();
           log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
-          if (index + 1 <= maps.length - 1)
-            switchMap(++index);
-          else {
+          if (index + 1 <= maps.length - 1) {
+            setTimeout(() => {
+              switchMap(++index);
+            }, 1000)
+          } else {
             log.info(`Processed ${maps.length} maps. Exiting.`);
-            process.exit(0);
+            setTimeout(() => {
+              process.exit(0);
+            }, 2000);
           }
         })
         .catch(() => {})
@@ -128,15 +132,17 @@ function attemptScreenshot() {
   });
 }
 
-async function screenshot(times) {
-  let command = '';
-  
-  for (var i = 1; i <= times; i++)
-    command += 'jpeg;spec_next;wait 33;';
+function screenshot(times) {
+  return new Promise((resolve, reject) => {
+    let command = '';
 
-  await conn.command(command);
+    for (var i = 1; i <= times; i++)
+      command += 'jpeg;spec_next;wait 33;';
 
-  return times;
+    conn.command(command)
+      .then(() => resolve(times))
+      .catch(() => {});
+  })
 }
 
 function timeout(ms) {
@@ -173,7 +179,7 @@ function switchMap(n) {
               .then(() => conn.command(`changelevel ${getMapName(n)}`, 1000))
               .then(() => {
                 log.info(`Switching to ${getMapName(n)}`);
-                setTimeout(attemptScreenshot, 10000);
+                setTimeout(attemptScreenshot, 20000);
               })
               .catch((err) => {
                 log.warn(`Failed to switch map. Retrying.`);
@@ -185,7 +191,7 @@ function switchMap(n) {
             conn.command(`changelevel ${getMapName(n)}`, 1000)
              .then(() => {
                log.info(`Switching to ${getMapName(n)}`);
-               setTimeout(attemptScreenshot, 10000);
+               setTimeout(attemptScreenshot, 20000);
              })
              .catch((err) => {
                log.warn(`Failed to switch map. Retrying.`);
