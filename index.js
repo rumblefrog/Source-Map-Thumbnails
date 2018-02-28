@@ -111,13 +111,15 @@ function attemptScreenshot() {
         .then(() => getNodes())
         .then((count) => screenshot(count))
         .then((times) => {
-          madeit();
-          log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
-          if (index + 1 <= maps.length - 1)
-            switchMap(++index);
-          else {
-            log.info(`Processed ${maps.length} maps. Exiting.`);
-            process.exit(0);
+          if (times) {
+            madeit();
+            log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
+            if (index + 1 <= maps.length - 1)
+              switchMap(++index);
+            else {
+              log.info(`Processed ${maps.length} maps. Exiting.`);
+              process.exit(0);
+            }
           }
         })
         .catch(() => {})
@@ -136,13 +138,13 @@ function screenshot(times) {
     let command = '';
 
     for (var i = 1; i <= times; i++)
-      command += 'jpeg;spec_next;wait 20;';
+      command += 'jpeg;wait 30;spec_next;';
 
     conn.command(command)
       .then(() => {
         setTimeout(() => {
           resolve(times);
-        }, times * 500)
+        }, times * 600)
       })
       .catch(() => {});
   })
