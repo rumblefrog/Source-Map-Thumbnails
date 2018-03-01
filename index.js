@@ -127,7 +127,7 @@ function attemptScreenshot() {
     })
   ]).then(() => {}).catch(() => {
     log.debug('Retrying screenshot');
-    setTimeout(attemptScreenshot, 5000)
+    setTimeout(attemptScreenshot, 10000)
   });
 }
 
@@ -142,7 +142,7 @@ function screenshot(times) {
       .then(() => {
         setTimeout(() => {
           resolve(times);
-        }, times * 1000)
+        }, (times * 1000) + 1000)
       })
       .catch(() => {});
   })
