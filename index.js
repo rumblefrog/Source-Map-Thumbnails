@@ -39,8 +39,6 @@ const RP = Math.random().toString(36).substring(2);
 
 const game = spawn(config.game_binary_location, [
   `-game`, config.game,
-  '-windowed',
-  '-noborder',
   '-novid',
   '-usercon',
   `+map`, config.starting_map,
@@ -191,7 +189,7 @@ function switchMap(n) {
                 log.warn(`Failed to switch map. Retrying.`);
                 setTimeout(() => {
                   switchMap(n);
-                }, 3000)
+                }, 5000)
             })
           } else {
             conn.command(`changelevel ${getMapName(n)}`, 1000)
@@ -203,7 +201,7 @@ function switchMap(n) {
                log.warn(`Failed to switch map. Retrying.`);
                setTimeout(() => {
                  switchMap(n);
-               }, 3000)
+               }, 5000)
              });
           }
         })
