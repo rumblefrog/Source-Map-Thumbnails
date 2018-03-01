@@ -142,7 +142,7 @@ function screenshot(times) {
       .then(() => {
         setTimeout(() => {
           resolve(times);
-        }, times * 600)
+        }, times * 1000)
       })
       .catch(() => {});
   })
