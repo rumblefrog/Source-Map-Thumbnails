@@ -215,7 +215,10 @@ function switchMap(n) {
 }
 
 async function organize(ss) {
-  await glob(`${game_dir}screenshots/*.jpg`).forEach((s) => {
+
+  const ss = await glob(`${game_dir}screenshots/*.jpg`);
+
+  ss.forEach((s) => {
 
       s = path.basename(s);
 
