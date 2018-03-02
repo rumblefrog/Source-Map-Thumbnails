@@ -9,7 +9,7 @@ Automate the creation of thumbnail within source games
 1. Disable Multi-Core In-Game
 2. Clone repository
 3. Run `yarn` to fetch dependencies
-4. Modify `config.json` and update the paths, as well as adding any launch options you want
+4. Change `config.json.example` to `config.json` and update the config, as well as adding any launch options you want
 5. Drop the maps you wish to create thumbnails for in the `maps/` folder of **this** directory
 6. Start `index.js`, it will launch your game and start the process, all the screenshots will be in the game's `screenshots` folder
 
@@ -19,6 +19,7 @@ Automate the creation of thumbnail within source games
 - Although it's a functional code, it's a proof of concept, and the RCON dependency is highly unstable
 - You can tune the quality by appending `-w`, `-h` to the desired values (TF2 will most likely crash with anything beyond 1080p)
 - You will most likely get tons of duplicate images, due to RCON dependency keep losing packets
+  - You may resolve this by enabling `remove_dupe` in config (Note: it's an expensive process, not recommended for large operations)
 
 ### Special Thanks
 
