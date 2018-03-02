@@ -8,7 +8,9 @@
   "license": "MIT",
   "dependencies": {
     "glob": "^7.1.2",
+    "glob-promise": "^3.3.0",
     "ip": "^1.1.5",
+    "resemblejs": "^2.10.0",
     "srcds-rcon": "^2.2.1",
     "winston": "^2.4.0"
   }

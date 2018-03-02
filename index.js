@@ -3,7 +3,8 @@ const spawn = require('child_process').spawn
     , ip = require('ip')
     , rcon = require('srcds-rcon')
     , log = require('winston')
-    , glob = require('glob')
+    , glob = require('glob-promise')
+    , resemble = require('resemblejs')
     , path = require('path')
     , fs = require('fs')
 
@@ -13,27 +14,29 @@ log.remove(log.transports.Console);
 
 log.add(log.transports.Console, { level: config.debug_level, prettyPrint: true, colorize: true, timestamp: true });
 
-let game_dir = config.game_directory.endsWith("/") ? "" : "/"
+let game_dir = config.game_directory + config.game_directory.endsWith("/") ? "" : "/"
 
 let maps = [];
 
+const list = {};
+
 let index = 0;
 
-glob('maps/*.bsp', (err, files) => {
-  if (err) {
+glob('maps/*.bsp')
+  .then((files) => {
+    maps = files;
+
+    if (maps.length <= 0) {
+      log.error('Maps directory empty, load some maps first!');
+      process.exit(0);
+    }
+
+    log.info(`Queued ${maps.length} maps`);
+  })
+  .catch((err) => {
     log.error('Failed to load maps directory, terminating')
     process.exit(1);
-  }
-
-  maps = files;
-
-  if (maps.length <= 0) {
-    log.error('Maps directory empty, load some maps first!');
-    process.exit(0);
-  }
-
-  log.info(`Queued ${maps.length} maps`);
-});
+  })
 
 const RP = Math.random().toString(36).substring(2);
 
@@ -115,16 +118,14 @@ function attemptScreenshot() {
             log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
             if (index + 1 <= maps.length - 1)
               switchMap(++index);
-            else {
-              log.info(`Processed ${maps.length} maps. Exiting.`);
-              process.exit(0);
-            }
+            else
+              organize();
           }
         })
         .catch(() => {})
     }),
     new Promise((resolve, reject) => {
-      setTimeout(reject, 5000);
+      setTimeout(reject, 10000);
     })
   ]).then(() => {}).catch(() => {
     log.debug('Retrying screenshot');
@@ -143,7 +144,7 @@ function screenshot(times) {
       .then(() => {
         setTimeout(() => {
           resolve(times);
-        }, (times * 1000) + 1000)
+        }, (times * 800))
       })
       .catch(() => {});
   })
@@ -202,7 +203,7 @@ function switchMap(n) {
                log.warn(`Failed to switch map. Retrying.`);
                setTimeout(() => {
                  switchMap(n);
-               }, 5000)
+               }, 7000)
              });
           }
         })
@@ -211,6 +212,64 @@ function switchMap(n) {
       setTimeout(reject, 5000);
     })
   ]).then(() => {}).catch(() => switchMap(n));
+}
+
+async function organize(ss) {
+  await glob(`${game_dir}screenshots/*.jpg`).forEach((s) => {
+
+      s = path.basename(s);
+
+      let map = s.substring(0, s.length - 8);
+
+      if (a.hasOwnProperty(map))
+          list[map].push(s);
+      else
+          list[map] = [s];
+  })
+
+  if (config.remove_dupe)
+    removeDupe();
+  else
+    migrate();
+}
+
+async function removeDupe() {
+  let f1, f2, c = 0;
+  for (var key in a) {
+    if (list[key].length < 2) continue;
+    for (var i = 0; i < list[key].length; i++) {
+      for (var j = i; j < list[key].length; j++) {
+        if (i != j) {
+          f1 = fs.readFileSync(`${game_dir}screenshots/${list[key][i]}`);
+          f2 = fs.readFileSync(`${game_dir}screenshots/${list[key][j]}`);
+          resemble(f1)
+            .compareTo(f2)
+            .onComplete((data) => {
+              if (data.misMatchPercentage < 5) {
+                c++;
+                log.debug(`${list[key][i]} is duplicate`);
+                list[key].splice(i, 1);
+                fs.unlinkSync(`${game_dir}screenshots/${list[key][i]}`);
+              }
+            })
+        }
+      }
+    }
+  }
+  migrate();
+}
+
+async function migrate() {
+  for (var key in list) {
+    let c = 1;
+
+    list[key].forEach(f => fs.renameSync(`${game_dir}screenshots/${f}`, `out/${key}-${c++}.jpg`))
+  }
+
+  fs.writeFileSync('out.json', JSON.stringify(list))
+
+  log.info(`Processed ${maps.length} maps. Exiting.`);
+  process.exit(0);
 }
 
 function copyToMaps(n) {
