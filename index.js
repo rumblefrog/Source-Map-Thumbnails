@@ -42,7 +42,6 @@ const RP = Math.random().toString(36).substring(2);
 
 const game = spawn(config.game_binary_location, [
   `-game`, config.game,
-  '-windowed',
   '-novid',
   '-usercon',
   `+map`, config.starting_map,
@@ -112,10 +111,10 @@ function attemptScreenshot() {
         .then(() => conn.command('jpeg_quality 100'))
         .then(() => getNodes())
         .then((count) => screenshot(count))
-        .then((times) => {
-          if (times) {
+        .then((o) => {
+          if (o && o.index == index) {
             madeit();
-            log.info(`Screenshotted ${getMapName(index)} with ${times} spectator nodes`);
+            log.info(`Screenshotted ${getMapName(index)} with ${o.times} spectator nodes`);
             if (index + 1 <= maps.length - 1)
               switchMap(++index);
             else
@@ -125,7 +124,7 @@ function attemptScreenshot() {
         .catch(() => {})
     }),
     new Promise((resolve, reject) => {
-      setTimeout(reject, 10000);
+      setTimeout(reject, 5000);
     })
   ]).then(() => {}).catch(() => {
     log.debug('Retrying screenshot');
@@ -135,6 +134,7 @@ function attemptScreenshot() {
 
 function screenshot(times) {
   return new Promise((resolve, reject) => {
+    let cm = index;
     let command = '';
 
     for (var i = 1; i <= times; i++)
@@ -143,7 +143,7 @@ function screenshot(times) {
     conn.command(command)
       .then(() => {
         setTimeout(() => {
-          resolve(times);
+          resolve({'times':times, 'index':cm});
         }, (times * 800))
       })
       .catch(() => {});
