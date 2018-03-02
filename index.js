@@ -22,6 +22,8 @@ const list = {};
 
 let index = 0;
 
+let end = false;
+
 glob('maps/*.bsp')
   .then((files) => {
     maps = files;
@@ -117,8 +119,10 @@ function attemptScreenshot() {
             log.info(`Screenshotted ${getMapName(index)} with ${o.times} spectator nodes`);
             if (index + 1 <= maps.length - 1)
               switchMap(++index);
-            else
+            else {
+              end = true;
               organize();
+            }
           }
         })
         .catch(() => {})
@@ -127,8 +131,10 @@ function attemptScreenshot() {
       setTimeout(reject, 5000);
     })
   ]).then(() => {}).catch(() => {
-    log.debug('Retrying screenshot');
-    setTimeout(attemptScreenshot, 10000)
+    if (!end) {
+      log.debug('Retrying screenshot');
+      setTimeout(attemptScreenshot, 10000)
+    }
   });
 }
 
