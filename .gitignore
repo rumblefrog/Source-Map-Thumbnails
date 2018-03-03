@@ -4,5 +4,11 @@ node_modules/
 # Maps
 *.bsp
 
+# Outputs
+*.jpg
+
 # Config
 config.json
+
+# Result
+out.json
