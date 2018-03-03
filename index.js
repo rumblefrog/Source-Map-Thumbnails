@@ -14,7 +14,7 @@ log.remove(log.transports.Console);
 
 log.add(log.transports.Console, { level: config.debug_level, prettyPrint: true, colorize: true, timestamp: true });
 
-let game_dir = config.game_directory + config.game_directory.endsWith("/") ? "" : "/"
+let game_dir = config.game_directory.endsWith("/") ? config.game_directory : config.game_directory + "/"
 
 let maps = [];
 
@@ -103,6 +103,7 @@ function prepGame() {
 }
 
 function attemptScreenshot() {
+  if (end) return;
   log.debug('Attempting to screenshot');
   Promise.race([
     new Promise((madeit, tooslow) => {
@@ -114,7 +115,7 @@ function attemptScreenshot() {
         .then(() => getNodes())
         .then((count) => screenshot(count))
         .then((o) => {
-          if (o && o.index == index) {
+          if (o && o.times && o.index == index) {
             madeit();
             log.info(`Screenshotted ${getMapName(index)} with ${o.times} spectator nodes`);
             if (index + 1 <= maps.length - 1)
@@ -125,7 +126,7 @@ function attemptScreenshot() {
             }
           }
         })
-        .catch(() => {})
+        .catch((e) => {})
     }),
     new Promise((resolve, reject) => {
       setTimeout(reject, 5000);
@@ -220,7 +221,9 @@ function switchMap(n) {
   ]).then(() => {}).catch(() => switchMap(n));
 }
 
-async function organize(ss) {
+async function organize() {
+
+  log.debug('organize');
 
   const ss = await glob(`${game_dir}screenshots/*.jpg`);
 
@@ -230,7 +233,7 @@ async function organize(ss) {
 
       let map = s.substring(0, s.length - 8);
 
-      if (a.hasOwnProperty(map))
+      if (list.hasOwnProperty(map))
           list[map].push(s);
       else
           list[map] = [s];
@@ -243,8 +246,9 @@ async function organize(ss) {
 }
 
 async function removeDupe() {
-  let f1, f2, c = 0;
-  for (var key in a) {
+  log.debug('removeDupe');
+  let f1, f2, c = 0, d = [];
+  for (var key in list) {
     if (list[key].length < 2) continue;
     for (var i = 0; i < list[key].length; i++) {
       for (var j = i; j < list[key].length; j++) {
@@ -258,17 +262,19 @@ async function removeDupe() {
                 c++;
                 log.debug(`${list[key][i]} is duplicate`);
                 list[key].splice(i, 1);
-                fs.unlinkSync(`${game_dir}screenshots/${list[key][i]}`);
+                d.push(`${game_dir}screenshots/${list[key][i]}`);
               }
             })
         }
       }
     }
   }
+  d.forEach(dupe => fs.unlinkSync(dupe));
   migrate();
 }
 
 async function migrate() {
+  log.debug('migrate');
   for (var key in list) {
     let c = 1;
 
@@ -302,4 +308,4 @@ function checkFileExists(filepath){
   });
 }
 
-process.on('unhandledRejection', r => {});
+// process.on('unhandledRejection', r => {});
