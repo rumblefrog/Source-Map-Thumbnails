@@ -98,8 +98,9 @@ function prepGame() {
           reject();
         }
       })
+      .catch((err) => {})
 
-  }).catch(err => reject(err));
+  })
 }
 
 function attemptScreenshot() {
@@ -281,7 +282,7 @@ async function migrate() {
     list[key].forEach(f => fs.renameSync(`${game_dir}screenshots/${f}`, `out/${key}-${c++}.jpg`))
   }
 
-  fs.writeFileSync('out.json', JSON.stringify(list))
+  fs.writeFileSync('out.json', JSON.stringify(list, null, 4))
 
   log.info(`Processed ${maps.length} maps. Exiting.`);
   process.exit(0);
