@@ -100,7 +100,7 @@ function prepGame() {
         const m = status.match(/map\s+:\s([A-z0-9]+)/i)[1];
         const cstate = status.match(/#.* +([0-9]+) +"(.+)" +(STEAM_[0-9]:[0-9]:[0-9]+|\[U:[0-9]:[0-9]+\]) +([0-9:]+) +([0-9]+) +([0-9]+) +([a-zA-Z]+).* +([A-z0-9.:]+)/i)[7];
 
-        if (m == getMapName(index) && cstate == 'active')
+        if (m == maps[index] && cstate == 'active')
           setTimeout(resolve, 1000);
         else {
           log.debug('map/status failed');
@@ -127,7 +127,7 @@ function attemptScreenshot() {
         .then((o) => {
           if (o && o.times && o.index == index) {
             madeit();
-            log.info(`Screenshotted ${getMapName(index)} with ${o.times} spectator nodes`);
+            log.info(`Screenshotted ${maps[index]} with ${o.times} spectator nodes`);
             if (index + 1 <= maps.length - 1)
               switchMap(++index);
             else {
@@ -200,9 +200,9 @@ function switchMap(n) {
           if (!exist)
               switchMap(++index);
           else {
-            conn.command(`changelevel ${getMapName(n)}`, 1000)
+            conn.command(`changelevel ${maps[n]}`, 1000)
              .then(() => {
-               log.info(`Switching to ${getMapName(n)}`);
+               log.info(`Switching to ${maps[n]}`);
                setTimeout(attemptScreenshot, 20000);
              })
              .catch((err) => {
@@ -284,10 +284,6 @@ async function migrate() {
 
   log.info(`Processed ${maps.length} maps. Exiting.`);
   process.exit(0);
-}
-
-function getMapName(n) {
-  return path.basename(maps[n], '.bsp');
 }
 
 function checkFileExists(filepath){
