@@ -10,8 +10,7 @@ node_modules/
 *.jpg
 
 # Config
-config.json
-list.json
+*.json
 
 # Result
 out.json
