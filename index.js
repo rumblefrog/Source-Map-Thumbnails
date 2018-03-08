@@ -24,21 +24,29 @@ let index = 0;
 
 let end = false;
 
-glob('maps/*.bsp')
-  .then((files) => {
-    maps = files;
+checkFileExists('list.json')
+    .then((exist) => {
+        if (!exist) {
+            log.error('Missing list.json file');
+            process.exit(1);
+        }
 
-    if (maps.length <= 0) {
-      log.error('Maps directory empty, load some maps first!');
-      process.exit(0);
-    }
+        fs.readFile('list.json', (err, data) => {
+            if (err) {
+                log.error('Unable to read list.json', err);
+                process.exit(1);
+            }
 
-    log.info(`Queued ${maps.length} maps`);
-  })
-  .catch((err) => {
-    log.error('Failed to load maps directory, terminating')
-    process.exit(1);
-  })
+            let json = JSON.parse(data.toString());
+
+            if (!Array.isArray(json)) {
+                log.error('list.json Is not in array format');
+                process.exit(1);
+            }
+
+            maps = json;
+        })
+    })
 
 const RP = Math.random().toString(36).substring(2);
 
@@ -188,20 +196,9 @@ function switchMap(n) {
       checkFileExists(maps[n])
         .then((exist) => {
           resolve();
-          if (!exist) {
-            copyToMaps(n)
-              .then(() => conn.command(`changelevel ${getMapName(n)}`, 1000))
-              .then(() => {
-                log.info(`Switching to ${getMapName(n)}`);
-                setTimeout(attemptScreenshot, 20000);
-              })
-              .catch((err) => {
-                log.warn(`Failed to switch map. Retrying.`);
-                setTimeout(() => {
-                  switchMap(n);
-                }, 5000)
-            })
-          } else {
+          if (!exist)
+              switchMap(++index);
+          else {
             conn.command(`changelevel ${getMapName(n)}`, 1000)
              .then(() => {
                log.info(`Switching to ${getMapName(n)}`);
@@ -286,15 +283,6 @@ async function migrate() {
 
   log.info(`Processed ${maps.length} maps. Exiting.`);
   process.exit(0);
-}
-
-function copyToMaps(n) {
-  return new Promise((resolve, reject) => {
-    fs.copyFile(map[n], `${game_dir}maps/${getMapName(n)}.bsp`, (err) => {
-      if (err) return reject(err);
-      else resolve();
-    })
-  });
 }
 
 function getMapName(n) {
