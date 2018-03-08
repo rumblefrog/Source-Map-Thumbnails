@@ -7,6 +7,9 @@ const spawn = require('child_process').spawn
     , resemble = require('resemblejs')
     , path = require('path')
     , fs = require('fs')
+    , _ = require('lodash')
+
+process.stdin.resume();
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
@@ -45,6 +48,8 @@ checkFileExists('list.json')
             }
 
             maps = json;
+
+            log.info(`Queued ${json.length} maps`);
         })
     })
 
@@ -112,6 +117,8 @@ function prepGame() {
   })
 }
 
+const throttleAttemptScreenshot = _.throttle(attemptScreenshot, 9000);
+
 function attemptScreenshot() {
   if (end) return;
   log.debug('Attempting to screenshot');
@@ -144,7 +151,7 @@ function attemptScreenshot() {
   ]).then(() => {}).catch(() => {
     if (!end) {
       log.debug('Retrying screenshot');
-      setTimeout(attemptScreenshot, 10000)
+      setTimeout(throttleAttemptScreenshot, 10000)
     }
   });
 }
@@ -203,13 +210,13 @@ function switchMap(n) {
         .then((exist) => {
           resolve();
           if (!exist) {
-              log.debug(`${maps[n]} missing. Skipping.`);
+              log.warn(`${maps[n]} missing. Skipping.`);
               switchMap(++index);
           } else {
             conn.command(`changelevel ${maps[n]}`, 1000)
              .then(() => {
                log.info(`Switching to ${maps[n]}`);
-               setTimeout(attemptScreenshot, 20000);
+               setTimeout(throttleAttemptScreenshot, 20000);
              })
              .catch((err) => {
                log.warn(`Failed to switch map. Retrying.`);
@@ -312,3 +319,9 @@ function checkMapExists(n) {
         })
     })
 }
+
+process.on('SIGINT', () => {
+    log.info('Starting early termination cleanup');
+
+    organize();
+})
