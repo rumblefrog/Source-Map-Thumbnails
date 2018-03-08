@@ -295,7 +295,7 @@ async function migrate() {
 
   fs.writeFileSync('out.json', JSON.stringify(list, null, 4))
 
-  log.info(`Processed ${maps.length} maps. Exiting.`);
+  log.info(`Processed ${index + 1} maps. Exiting.`);
   process.exit(0);
 }
 
@@ -322,6 +322,8 @@ function checkMapExists(n) {
 
 process.on('SIGINT', () => {
     log.info('Starting early termination cleanup');
+
+    end = true;
 
     organize();
 })
