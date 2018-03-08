@@ -194,7 +194,7 @@ function switchMap(n) {
   log.debug('switchMap');
   Promise.race([
     new Promise((resolve, reject) => {
-      checkFileExists(maps[n])
+      checkMapExists(n)
         .then((exist) => {
           resolve();
           if (!exist)
@@ -292,4 +292,17 @@ function checkFileExists(filepath){
       resolve(!error);
     });
   });
+}
+
+function checkMapExists(n) {
+    return new Promise((resolve) => {
+        Promise.all([
+            checkFileExists(`${game_dir}download/maps/${maps[n]}`),
+            checkFileExists(`${game_dir}maps/${maps[n]}`)
+        ]).then((result) => {
+            if (result[0] || result[1])
+                resolve(true);
+            else resolve(false);
+        })
+    })
 }
