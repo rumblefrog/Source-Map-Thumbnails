@@ -6,6 +6,9 @@
   "repository": "git@github.com:RumbleFrog/Source-Map-Thumbnails.git",
   "author": "RumbleFrog <xxlosttechxx@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "node index.js"  
+  },
   "dependencies": {
     "glob": "^7.1.2",
     "glob-promise": "^3.3.0",
