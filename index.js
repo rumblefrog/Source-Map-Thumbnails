@@ -191,15 +191,21 @@ async function getNodes() {
 }
 
 function switchMap(n) {
-  log.debug('switchMap');
+
+  log.debug('switchMap', n);
+
+  if (!maps[n])
+    return;
+
   Promise.race([
     new Promise((resolve, reject) => {
       checkMapExists(n)
         .then((exist) => {
           resolve();
-          if (!exist)
+          if (!exist) {
+              log.debug(`${maps[n]} missing. Skipping.`);
               switchMap(++index);
-          else {
+          } else {
             conn.command(`changelevel ${maps[n]}`, 1000)
              .then(() => {
                log.info(`Switching to ${maps[n]}`);
@@ -297,8 +303,8 @@ function checkFileExists(filepath){
 function checkMapExists(n) {
     return new Promise((resolve) => {
         Promise.all([
-            checkFileExists(`${game_dir}download/maps/${maps[n]}`),
-            checkFileExists(`${game_dir}maps/${maps[n]}`)
+            checkFileExists(`${game_dir}download/maps/${maps[n]}.bsp`),
+            checkFileExists(`${game_dir}maps/${maps[n]}.bsp`)
         ]).then((result) => {
             if (result[0] || result[1])
                 resolve(true);
