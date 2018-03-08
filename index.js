@@ -52,6 +52,7 @@ const RP = Math.random().toString(36).substring(2);
 
 const game = spawn(config.game_binary_location, [
   `-game`, config.game,
+  '-windowed',
   '-novid',
   '-usercon',
   `+map`, config.starting_map,
