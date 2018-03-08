@@ -296,5 +296,3 @@ function checkFileExists(filepath){
     });
   });
 }
-
-// process.on('unhandledRejection', r => {});
