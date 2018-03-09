@@ -27,7 +27,7 @@ Quickstart
 4. Change `list.json.example` to `list.json` and update it with the maps you wish to render
 5. Drop the maps you wish to create thumbnails for in the maps folder of the game directory
 6. Launch via `yarn start`, it will launch your game and start the process, all the screenshots will be in the game&#39;s `screenshots` folder
-7. You may optionally do `yarn run organize` with `remove_dupe` option in config to migrate &amp; remove duplicates from the screenshots folder
+7. You may optionally do `yarn run organize` with `remove_dupe` option enabled in config to migrate &amp; remove duplicates from the screenshots folder
 
 Notes
 ---
