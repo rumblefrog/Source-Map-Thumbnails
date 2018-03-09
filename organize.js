@@ -74,8 +74,6 @@ async function migrate() {
   for (var key in list) {
     let c = 1;
 
-    console.log(list[key]);
-
     list[key].forEach((f) => {
         fs.renameSync(`${game_dir}screenshots/${f}`, `out/${key}-${c++}.jpg`);
         processed++;
