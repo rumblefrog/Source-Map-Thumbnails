@@ -3,13 +3,9 @@ const spawn = require('child_process').spawn
     , ip = require('ip')
     , rcon = require('srcds-rcon')
     , log = require('winston')
-    , glob = require('glob-promise')
-    , resemble = require('resemblejs')
     , path = require('path')
     , fs = require('fs')
     , _ = require('lodash')
-
-process.stdin.resume();
 
 log.addColors({ error: "red", warning: "yellow", info: "green", verbose: "white", debug: "blue" });
 
@@ -24,8 +20,6 @@ let maps = [];
 const list = {};
 
 let index = 0;
-
-let end = false;
 
 checkFileExists('list.json')
     .then((exist) => {
@@ -120,7 +114,6 @@ function prepGame() {
 const throttleAttemptScreenshot = _.throttle(attemptScreenshot, 9000);
 
 function attemptScreenshot() {
-  if (end) return;
   log.debug('Attempting to screenshot');
   Promise.race([
     new Promise((madeit, tooslow) => {
@@ -138,8 +131,8 @@ function attemptScreenshot() {
             if (index + 1 <= maps.length - 1)
               switchMap(++index);
             else {
-              end = true;
-              organize();
+              log.info(`Processed ${index + 1} maps`);
+              process.exit(0);
             }
           }
         })
@@ -149,10 +142,8 @@ function attemptScreenshot() {
       setTimeout(reject, 5000);
     })
   ]).then(() => {}).catch(() => {
-    if (!end) {
       log.debug('Retrying screenshot');
       setTimeout(throttleAttemptScreenshot, 10000)
-    }
   });
 }
 
@@ -233,71 +224,6 @@ function switchMap(n) {
   ]).then(() => {}).catch(() => switchMap(n));
 }
 
-async function organize() {
-
-  log.debug('organize');
-
-  const ss = await glob(`${game_dir}screenshots/*.jpg`);
-
-  ss.forEach((s) => {
-
-      s = path.basename(s);
-
-      let map = s.substring(0, s.length - 8);
-
-      if (list.hasOwnProperty(map))
-          list[map].push(s);
-      else
-          list[map] = [s];
-  })
-
-  if (config.remove_dupe)
-    removeDupe();
-  else
-    migrate();
-}
-
-async function removeDupe() {
-  log.debug('removeDupe');
-  let f1, f2, c = 0, d = [];
-  for (var key in list) {
-    if (list[key].length < 2) continue;
-    for (var i = 0; i < list[key].length; i++) {
-      for (var j = i; j < list[key].length; j++) {
-        if (i != j) {
-          f1 = fs.readFileSync(`${game_dir}screenshots/${list[key][i]}`);
-          f2 = fs.readFileSync(`${game_dir}screenshots/${list[key][j]}`);
-          resemble(f1)
-            .compareTo(f2)
-            .onComplete((data) => {
-              if (data.misMatchPercentage < 5) {
-                c++;
-                log.debug(`${list[key][i]} is duplicate`);
-                list[key].splice(i, 1);
-                d.push(`${game_dir}screenshots/${list[key][i]}`);
-              }
-            })
-        }
-      }
-    }
-  }
-  d.forEach(dupe => fs.unlinkSync(dupe));
-  migrate();
-}
-
-async function migrate() {
-  log.debug('migrate');
-  for (var key in list) {
-    let c = 1;
-
-    list[key].forEach(f => fs.renameSync(`${game_dir}screenshots/${f}`, `out/${key}-${c++}.jpg`))
-  }
-
-  fs.writeFileSync('out.json', JSON.stringify(list, null, 4))
-
-  log.info(`Processed ${index + 1} maps. Exiting.`);
-  process.exit(0);
-}
 
 function checkFileExists(filepath){
   return new Promise((resolve, reject) => {
@@ -319,11 +245,3 @@ function checkMapExists(n) {
         })
     })
 }
-
-process.on('SIGINT', () => {
-    log.info('Starting early termination cleanup');
-
-    end = true;
-
-    organize();
-})
