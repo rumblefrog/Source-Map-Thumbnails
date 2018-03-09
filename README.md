@@ -22,13 +22,12 @@ Quickstart
 ---
 
 1. Disable Multi-Core In-Game
-2. Clone repository
-3. Run `yarn` to fetch dependencies
-4. Change `config.json.example` to `config.json` and update the config, as well as adding any launch options you want
-5. Change `list.json.example` to `list.json` and update it with the maps you wish to render
-6. Drop the maps you wish to create thumbnails for in the maps folder of the game directory
-7. Launch via `yarn start`, it will launch your game and start the process, all the screenshots will be in the game&#39;s `screenshots` folder
-8. You may optionally do `yarn run organize` with `remove_dupe` option in config to migrate &amp; remove duplicates from the screenshots folder
+2. Run `yarn` to fetch dependencies
+3. Change `config.json.example` to `config.json` and update the config, as well as adding any launch options you want
+4. Change `list.json.example` to `list.json` and update it with the maps you wish to render
+5. Drop the maps you wish to create thumbnails for in the maps folder of the game directory
+6. Launch via `yarn start`, it will launch your game and start the process, all the screenshots will be in the game&#39;s `screenshots` folder
+7. You may optionally do `yarn run organize` with `remove_dupe` option in config to migrate &amp; remove duplicates from the screenshots folder
 
 Disclaimers
 ---
