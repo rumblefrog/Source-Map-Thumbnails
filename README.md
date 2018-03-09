@@ -53,5 +53,5 @@ License
 
 [![License][license-image]][license-url]
 
-[license-image]: https://img.shields.io/github/license/RumbleFrog/Source-Map-Thumbnails.svg
+[license-image]: https://img.shields.io/github/license/RumbleFrog/Source-Map-Thumbnails.svg?style=flat-square
 [license-url]: LICENSE
