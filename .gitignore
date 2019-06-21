@@ -1,16 +1,15 @@
-# Dependency directories
-node_modules/
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Maps
-*.bsp
-*.bz2
-*.nav
+# Test binary, built with `go test -c`
+*.test
 
-# Outputs
-*.jpg
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-# Config
-*.json
-
-# Result
-out.json
+# Dependency directories (remove the comment below to include it)
+# vendor/
