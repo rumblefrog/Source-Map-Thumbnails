@@ -10,9 +10,17 @@ import (
 
 // Function should be spawned in a separate goroutine, chan will notify if exited
 func SpawnGame(terminate chan<- int8) {
+	SpawnArgs := []string{
+		"-game " + config.Config.Game.Game,
+		"-windowed",
+		"-novid",
+		"-usercon",
+		"+map " + config.Config.Game.StartingMap,
+	}
+
 	command := exec.Command(
 		config.Config.Game.GameBinaryLocation,
-		config.Config.Game.LaunchOptions...,
+		append(config.Config.Game.LaunchOptions, SpawnArgs...)...,
 	)
 
 	err := command.Run()

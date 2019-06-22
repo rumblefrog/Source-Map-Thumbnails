@@ -4,6 +4,7 @@ type GameConfig_t struct {
 	Game               string   `toml:"Game"`
 	GameBinaryLocation string   `toml:"GameBinaryLocation"`
 	GameDirectory      string   `toml:"GameDirectory"`
+	StartingMap        string   `toml:"StartingMap"`
 	LaunchOptions      []string `toml:"LaunchOptions"`
 }
 
