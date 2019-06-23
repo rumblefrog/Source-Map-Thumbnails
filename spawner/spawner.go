@@ -2,6 +2,9 @@ package spawner
 
 import (
 	"os/exec"
+	"path/filepath"
+	"strings"
+	"syscall"
 
 	"github.com/sirupsen/logrus"
 
@@ -15,13 +18,33 @@ func SpawnGame(terminate chan<- int8) {
 		"-windowed",
 		"-novid",
 		"-usercon",
+		"-ip 127.0.0.1", // Bind to a local interface so only we can connect
 		"+map " + config.Config.Game.StartingMap,
+		"+rcon_password smt", // A password required for rcon to start
 	}
 
-	command := exec.Command(
-		config.Config.Game.GameBinaryLocation,
-		append(config.Config.Game.LaunchOptions, SpawnArgs...)...,
-	)
+	// We are required to construct the CmdLine (Windows only) ourselves because hl2 cannot unquote the way golang quotes
+
+	var cArg strings.Builder
+
+	cArg.WriteString(filepath.Join(config.Config.Game.GameDirectory, config.Config.Game.EngineBinaryName))
+	cArg.WriteRune(' ')
+
+	command := exec.Command(cArg.String())
+
+	for _, v := range SpawnArgs {
+		cArg.WriteRune(' ')
+		cArg.WriteString(v)
+	}
+
+	for _, v := range config.Config.Game.LaunchOptions {
+		cArg.WriteRune(' ')
+		cArg.WriteString(v)
+	}
+
+	command.SysProcAttr = &syscall.SysProcAttr{}
+
+	command.SysProcAttr.CmdLine = cArg.String()
 
 	err := command.Run()
 

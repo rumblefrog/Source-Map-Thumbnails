@@ -1,0 +1,12 @@
+[Game]
+# Game shortcode
+Game = "tf"
+
+# Engine binary name
+EngineBinaryName = "hl2.exe"
+
+# Game Directory
+GameDirectory = "F:\\SteamLibrary\\steamapps\\common\\Team Fortress 2"
+
+# Starting map
+StartingMap = "arena_badlands"
