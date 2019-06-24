@@ -10,3 +10,9 @@ GameDirectory = "F:\\SteamLibrary\\steamapps\\common\\Team Fortress 2"
 
 # Starting map
 StartingMap = "arena_badlands"
+
+[PostProcessing]
+# Will automatically migrate screenshots to their corresponding folder
+Migrate = true
+# Generate meta file per map
+Meta = true
