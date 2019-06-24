@@ -1,6 +1,9 @@
 package preprocessor
 
-type PreProcessorHandler_t = func(string) bool
+type PreProcessorHandler_t interface {
+	Initiate() bool
+	Handle(string) bool
+}
 
 type PreProcessor_t struct {
 	handlers []PreProcessorHandler_t
@@ -12,15 +15,19 @@ func NewPreProcessor() *PreProcessor_t {
 	}
 }
 
-func (p *PreProcessor_t) AddHandler(h PreProcessorHandler_t) PreProcessorHandler_t {
+func (p *PreProcessor_t) AddHandler(h PreProcessorHandler_t) bool {
+	if h.Initiate() == false {
+		return false
+	}
+
 	p.handlers = append(p.handlers, h)
 
-	return h
+	return true
 }
 
 func (p *PreProcessor_t) Run(m string) bool {
-	for _, fn := range p.handlers {
-		if fn(m) == false {
+	for _, i := range p.handlers {
+		if i.Handle(m) == false {
 			return false
 		}
 	}
