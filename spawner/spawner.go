@@ -11,6 +11,10 @@ import (
 	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
 )
 
+var (
+	Command *exec.Cmd
+)
+
 // Function should be spawned in a separate goroutine, chan will notify if exited
 func SpawnGame(terminate chan<- int8) {
 	SpawnArgs := []string{
@@ -30,7 +34,7 @@ func SpawnGame(terminate chan<- int8) {
 	cArg.WriteString(filepath.Join(config.Config.Game.GameDirectory, config.Config.Game.EngineBinaryName))
 	cArg.WriteRune(' ')
 
-	command := exec.Command(cArg.String())
+	Command = exec.Command(cArg.String())
 
 	for _, v := range SpawnArgs {
 		cArg.WriteRune(' ')
@@ -42,11 +46,11 @@ func SpawnGame(terminate chan<- int8) {
 		cArg.WriteString(v)
 	}
 
-	command.SysProcAttr = &syscall.SysProcAttr{}
+	Command.SysProcAttr = &syscall.SysProcAttr{}
 
-	command.SysProcAttr.CmdLine = cArg.String()
+	Command.SysProcAttr.CmdLine = cArg.String()
 
-	err := command.Run()
+	err := Command.Run()
 
 	if err != nil {
 		logrus.Error(err)
@@ -54,7 +58,12 @@ func SpawnGame(terminate chan<- int8) {
 		terminate <- 0
 	}
 
-	command.Wait()
+	Command.Wait()
 
 	terminate <- 0
+}
+
+// Calling this will also stop the block at .Wait, causing it to send an int to main to finish cleaning up
+func Terminate() error {
+	return Command.Process.Kill()
 }
