@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
+	"github.com/RumbleFrog/Source-Map-Thumbnails/rcon"
 )
 
 var (
@@ -65,5 +66,7 @@ func SpawnGame(terminate chan<- int8) {
 
 // Calling this will also stop the block at .Wait, causing it to send an int to main to finish cleaning up
 func Terminate() error {
+	rcon.Connection.Close()
+
 	return Command.Process.Kill()
 }
