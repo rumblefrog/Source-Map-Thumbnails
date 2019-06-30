@@ -50,6 +50,10 @@ func (q *Queue_t) Start() {
 
 	<-q.Wait
 
+	q.Setup()
+
+	<-q.Wait
+
 	q.ProcessItem()
 
 	// Call queue processing
@@ -71,40 +75,6 @@ func (q *Queue_t) ProcessItem() {
 }
 
 func (q *Queue_t) Screenshot() {
-	// Not going to do err check as there's no reason they should fail during this session
-
-	err := q.Connection.WriteNoReply("sv_cheats 1")
-
-	if err != nil {
-		q.ScreenshotTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("cl_drawhud 0")
-
-	if err != nil {
-		q.ScreenshotTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("spec_mode")
-
-	if err != nil {
-		q.ScreenshotTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("jpeg_quality 100")
-
-	if err != nil {
-		q.ScreenshotTimed()
-
-		return
-	}
-
 	nodes := q.GetNodes()
 
 	if nodes == nil {
@@ -119,7 +89,7 @@ func (q *Queue_t) Screenshot() {
 		query.WriteString("jpeg;wait 66;spec_next;wait 66;")
 	}
 
-	err = q.Connection.WriteNoReply(query.String())
+	err := q.Connection.WriteNoReply(query.String())
 
 	if err != nil {
 		q.ScreenshotTimed()
@@ -230,12 +200,52 @@ func (q *Queue_t) CheckMap() {
 	q.Wait <- 1
 }
 
+func (q *Queue_t) Setup() {
+	err := q.Connection.WriteNoReply("sv_cheats 1")
+
+	if err != nil {
+		q.SetupTimed()
+
+		return
+	}
+
+	err = q.Connection.WriteNoReply("cl_drawhud 0")
+
+	if err != nil {
+		q.SetupTimed()
+
+		return
+	}
+
+	err = q.Connection.WriteNoReply("spec_mode")
+
+	if err != nil {
+		q.SetupTimed()
+
+		return
+	}
+
+	err = q.Connection.WriteNoReply("jpeg_quality 100")
+
+	if err != nil {
+		q.SetupTimed()
+
+		return
+	}
+
+	q.Wait <- 1
+}
+
 func (q *Queue_t) CheckMapTimed() {
 	time.AfterFunc(5*time.Second, q.CheckMap)
 }
 
 func (q *Queue_t) ScreenshotTimed() {
 	time.AfterFunc(5*time.Second, q.Screenshot)
+}
+
+func (q *Queue_t) SetupTimed() {
+	time.AfterFunc(5*time.Second, q.SetupTimed)
 }
 
 func (q *Queue_t) More() bool {
