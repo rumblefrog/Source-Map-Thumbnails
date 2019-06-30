@@ -92,6 +92,18 @@ func (r *RemoteConsole) Write(cmd string) (requestId int, err error) {
 	return r.writeCmd(cmdExecCommand, cmd)
 }
 
+func (r *RemoteConsole) WriteNoReply(cmd string) (err error) {
+	_, err = r.Write(cmd)
+
+	if err != nil {
+		return
+	}
+
+	_, _, err = r.Read()
+
+	return err
+}
+
 func (r *RemoteConsole) Read() (response string, requestId int, err error) {
 	var respType int
 	var respBytes []byte

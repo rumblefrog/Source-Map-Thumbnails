@@ -1,8 +1,10 @@
 package postprocessor
 
+import "github.com/RumbleFrog/Source-Map-Thumbnails/meta"
+
 type PostProcessorHandler_t interface {
 	Initiate() bool
-	Handle(Map_t)
+	Handle(meta.Map_t)
 }
 
 type PostProcessor_t struct {
@@ -25,7 +27,7 @@ func (p *PostProcessor_t) AddHandler(h PostProcessorHandler_t) bool {
 	return true
 }
 
-func (p *PostProcessor_t) Run(m Map_t) {
+func (p *PostProcessor_t) Run(m meta.Map_t) {
 	for _, i := range p.handlers {
 		i.Handle(m)
 	}

@@ -20,8 +20,10 @@ var (
 // Function should be spawned in a separate goroutine, chan will notify if exited
 func SpawnGame(terminate chan<- int8) {
 	SpawnArgs := []string{
+		"-steam",
 		"-game " + config.Config.Game.Game,
 		"-windowed",
+		"-noborder",
 		"-novid",
 		"-usercon",
 		"-ip " + utils.GetFirstLocalIPv4(), // Bind to a local interface so only we can connect
