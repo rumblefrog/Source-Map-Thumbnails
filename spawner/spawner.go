@@ -6,10 +6,11 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/RumbleFrog/Source-Map-Thumbnails/utils"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/rcon"
 )
 
 var (
@@ -23,7 +24,7 @@ func SpawnGame(terminate chan<- int8) {
 		"-windowed",
 		"-novid",
 		"-usercon",
-		"-ip 127.0.0.1", // Bind to a local interface so only we can connect
+		"-ip " + utils.GetFirstLocalIPv4(), // Bind to a local interface so only we can connect
 		"+map " + config.Config.Game.StartingMap,
 		"+rcon_password smt", // A password required for rcon to start
 	}
@@ -54,7 +55,7 @@ func SpawnGame(terminate chan<- int8) {
 	err := Command.Run()
 
 	if err != nil {
-		logrus.Error(err)
+		logrus.Info(err)
 
 		terminate <- 0
 	}
@@ -62,11 +63,4 @@ func SpawnGame(terminate chan<- int8) {
 	Command.Wait()
 
 	terminate <- 0
-}
-
-// Calling this will also stop the block at .Wait, causing it to send an int to main to finish cleaning up
-func Terminate() error {
-	rcon.Connection.Close()
-
-	return Command.Process.Kill()
 }
