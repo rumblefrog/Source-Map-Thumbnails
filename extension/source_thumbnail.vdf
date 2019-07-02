@@ -1,0 +1,5 @@
+"Metamod Plugin"
+{
+	"alias"		"sample"
+	"file"		"addons/source_thumbnail"
+}
