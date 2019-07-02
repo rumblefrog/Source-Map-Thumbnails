@@ -1,4 +1,4 @@
-module github.com/RumbleFrog/Source-Map-Thumbnails
+module github.com/rumblefrog/Source-Map-Thumbnails
 
 go 1.12
 

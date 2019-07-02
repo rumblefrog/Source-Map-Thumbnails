@@ -5,13 +5,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/preprocessor"
+	"github.com/rumblefrog/Source-Map-Thumbnails/postprocessor"
+
+	"github.com/rumblefrog/Source-Map-Thumbnails/preprocessor"
 
 	"github.com/mattn/go-colorable"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/queue"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/spawner"
+	"github.com/rumblefrog/Source-Map-Thumbnails/config"
+	"github.com/rumblefrog/Source-Map-Thumbnails/queue"
+	"github.com/rumblefrog/Source-Map-Thumbnails/spawner"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,13 +28,13 @@ func main() {
 
 	terminate := make(chan int8, 1)
 
-	logrus.Info("Launching game")
-
 	go spawner.SpawnGame(terminate)
 
 	queue := queue.NewQueue()
 
 	queue.PreProcessor.AddHandler(preprocessor.TFDBMapPrefix_t{})
+
+	queue.PostProcessor.AddHandler(postprocessor.Organize_t{})
 
 	go ListenExit(queue)
 

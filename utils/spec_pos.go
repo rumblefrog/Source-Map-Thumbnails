@@ -4,10 +4,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/meta"
+	"github.com/rumblefrog/Source-Map-Thumbnails/meta"
 )
 
 func ParseSpecPos(s string) (p meta.Position_t) {
+	// Remove trailing \n
+	s = strings.TrimSpace(s)
+
 	split := strings.Split(s, " ")
 
 	p.Coordinate[0], _ = strconv.ParseFloat(split[1], 64)

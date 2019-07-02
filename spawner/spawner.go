@@ -6,11 +6,11 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/utils"
+	"github.com/rumblefrog/Source-Map-Thumbnails/utils"
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
+	"github.com/rumblefrog/Source-Map-Thumbnails/config"
 )
 
 var (
@@ -19,12 +19,13 @@ var (
 
 // Function should be spawned in a separate goroutine, chan will notify if exited
 func SpawnGame(terminate chan<- int8) {
+	logrus.WithField("Game", config.Config.Game.Game).Info("Starting game")
+
 	SpawnArgs := []string{
 		"-steam",
 		"-game " + config.Config.Game.Game,
 		"-insecure",
 		"-windowed",
-		"-noborder",
 		"-novid",
 		"-usercon",
 		"-ip " + utils.GetFirstLocalIPv4(), // Bind to a local interface so only we can connect

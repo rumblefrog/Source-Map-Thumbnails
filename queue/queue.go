@@ -6,15 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/meta"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/postprocessor"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/preprocessor"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/rcon"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/utils"
+	"github.com/rumblefrog/Source-Map-Thumbnails/meta"
+	"github.com/rumblefrog/Source-Map-Thumbnails/postprocessor"
+	"github.com/rumblefrog/Source-Map-Thumbnails/preprocessor"
+	"github.com/rumblefrog/Source-Map-Thumbnails/rcon"
+	"github.com/rumblefrog/Source-Map-Thumbnails/utils"
 	"github.com/sirupsen/logrus"
 
-	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
-	"github.com/RumbleFrog/Source-Map-Thumbnails/spawner"
+	"github.com/rumblefrog/Source-Map-Thumbnails/spawner"
 )
 
 type Queue_t struct {
@@ -96,7 +95,17 @@ func (q *Queue_t) Screenshot() {
 
 	time.Sleep(time.Duration(800*(len(nodes)+1)) * time.Millisecond)
 
-	logrus.Infof("Iterated %d spectator nodes", len(nodes))
+	logrus.WithFields(logrus.Fields{
+		"Map":       q.Maps[q.Position],
+		"NodeCount": len(nodes),
+		"Remaining": len(q.Maps) - q.Position - 1,
+	}).Info("Map processed")
+
+	q.PostProcessor.Run(meta.Map_t{
+		Name:      q.Maps[q.Position],
+		Count:     len(nodes),
+		Positions: nodes,
+	})
 
 	q.Wait <- 1
 }
@@ -151,7 +160,7 @@ func (q *Queue_t) ChangeLevel() {
 		return
 	}
 
-	logrus.Infof("Changing level to %s", q.Maps[q.Position])
+	logrus.WithField("NextMap", q.Maps[q.Position]).Info("Changing level")
 
 	time.AfterFunc(10*time.Second, q.CheckMap)
 }
@@ -263,13 +272,7 @@ func (q *Queue_t) Terminate() error {
 }
 
 func (q *Queue_t) Populate() {
-	mapDir := filepath.Join(
-		config.Config.Game.GameDirectory,
-		config.Config.Game.Game,
-		"maps",
-	)
-
-	files, err := ioutil.ReadDir(mapDir)
+	files, err := ioutil.ReadDir(utils.GamePathJoin("maps"))
 
 	q.Maps = make([]string, 0, len(files)) // Let's pass a capacity here to prevent slice reallocation (slightly bigger is fine)
 
@@ -281,7 +284,7 @@ func (q *Queue_t) Populate() {
 	var mName string
 
 	for _, file := range files {
-		if !file.IsDir() && q.PreProcessor.Run(file.Name()) {
+		if !file.IsDir() {
 			mName = filepath.Base(file.Name())
 			mName = strings.TrimSuffix(mName, filepath.Ext(mName))
 

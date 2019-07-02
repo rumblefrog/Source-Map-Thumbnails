@@ -1,6 +1,6 @@
 package postprocessor
 
-import "github.com/RumbleFrog/Source-Map-Thumbnails/meta"
+import "github.com/rumblefrog/Source-Map-Thumbnails/meta"
 
 type PostProcessorHandler_t interface {
 	Initiate() bool
