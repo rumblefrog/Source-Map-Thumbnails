@@ -47,8 +47,6 @@ func (q *Queue_t) Start() {
 	<-q.Wait
 
 	q.ProcessItem()
-
-	// Call queue processing
 }
 
 func (q *Queue_t) ProcessItem() {
