@@ -1,6 +1,6 @@
-proj_name = 'source_thumbnail'
+proj_name = 'source_map_thumbnail'
 proj_srcs = [
-  'source_thumbnail.cpp',
+  'source_map_thumbnail.cpp',
 ]
 proj_c_flags = [
   '-Wall',

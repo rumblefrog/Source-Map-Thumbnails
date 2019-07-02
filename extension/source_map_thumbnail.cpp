@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <convar.h>
-#include "source_thumbnail.h"
+#include "convar.h"
+#include "source_map_thumbnail.h"
 
 SourceMapThumbnail g_SourceThumbnail;
 
@@ -16,9 +16,9 @@ bool SourceMapThumbnail::Load(PluginId id, ISmmAPI *ismm, char *error, size_t ma
 
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
-	g_cDrawHud = icvar.FindVar("cl_drawhud");
+	g_cDrawHud = icvar->FindVar("cl_drawhud");
 
-	// g_cDrawHud->m_nFlags = 0;
+	g_cDrawHud->m_nFlags = 0;
 
 	return true;
 }
