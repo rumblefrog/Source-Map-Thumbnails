@@ -5,6 +5,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/RumbleFrog/Source-Map-Thumbnails/preprocessor"
+
 	"github.com/mattn/go-colorable"
 
 	"github.com/RumbleFrog/Source-Map-Thumbnails/config"
@@ -29,6 +31,8 @@ func main() {
 	go spawner.SpawnGame(terminate)
 
 	queue := queue.NewQueue()
+
+	queue.PreProcessor.AddHandler(preprocessor.TFDBMapPrefix_t{})
 
 	go ListenExit(queue)
 

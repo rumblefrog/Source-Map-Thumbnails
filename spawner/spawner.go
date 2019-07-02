@@ -22,6 +22,7 @@ func SpawnGame(terminate chan<- int8) {
 	SpawnArgs := []string{
 		"-steam",
 		"-game " + config.Config.Game.Game,
+		"-insecure",
 		"-windowed",
 		"-noborder",
 		"-novid",

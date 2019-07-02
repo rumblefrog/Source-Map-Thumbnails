@@ -35,9 +35,6 @@ func NewQueue() (q *Queue_t) {
 		Wait:          make(chan int8, 1),
 	}
 
-	// Should we be registering the handlers here? Move to main and register base on config
-	q.PreProcessor.AddHandler(preprocessor.AlreadyProcessed_t{})
-
 	return
 }
 
@@ -50,10 +47,6 @@ func (q *Queue_t) Start() {
 
 	<-q.Wait
 
-	q.Setup()
-
-	<-q.Wait
-
 	q.ProcessItem()
 
 	// Call queue processing
@@ -62,6 +55,10 @@ func (q *Queue_t) Start() {
 func (q *Queue_t) ProcessItem() {
 	// Match status map to see if we need to change map
 	q.ChangeLevel()
+
+	<-q.Wait
+
+	q.Setup()
 
 	<-q.Wait
 
@@ -184,7 +181,7 @@ func (q *Queue_t) CheckMap() {
 	if len(mapMatches) < 2 || len(cStateMatches) < 8 {
 		q.CheckMapTimed()
 
-		logrus.Debug("Map data short. Retrying in 5s.", len(mapMatches), len(cStateMatches))
+		logrus.Debug("Map data short. Retrying in 5s.")
 
 		return
 	}
@@ -201,31 +198,7 @@ func (q *Queue_t) CheckMap() {
 }
 
 func (q *Queue_t) Setup() {
-	err := q.Connection.WriteNoReply("sv_cheats 1")
-
-	if err != nil {
-		q.SetupTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("cl_drawhud 0")
-
-	if err != nil {
-		q.SetupTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("spec_mode")
-
-	if err != nil {
-		q.SetupTimed()
-
-		return
-	}
-
-	err = q.Connection.WriteNoReply("jpeg_quality 100")
+	err := q.Connection.WriteNoReply("cl_drawhud 0;spec_mode;jpeg_quality 100;sv_cheats 1;sv_cheats 0;")
 
 	if err != nil {
 		q.SetupTimed()
@@ -310,11 +283,13 @@ func (q *Queue_t) Populate() {
 	for _, file := range files {
 		if !file.IsDir() && q.PreProcessor.Run(file.Name()) {
 			mName = filepath.Base(file.Name())
+			mName = strings.TrimSuffix(mName, filepath.Ext(mName))
 
-			q.Maps = append(
-				q.Maps,
-				strings.TrimSuffix(mName, filepath.Ext(mName)),
-			)
+			if !q.PreProcessor.Run(mName) {
+				continue
+			}
+
+			q.Maps = append(q.Maps, mName)
 		}
 	}
 }
