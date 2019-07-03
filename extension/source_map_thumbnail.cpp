@@ -56,7 +56,7 @@ const char *SourceMapThumbnail::GetURL()
  
 const char *SourceMapThumbnail::GetVersion()
 {
-	return "0.0.1";
+	return "2.0.0";
 }
 
 const char *SourceMapThumbnail::GetLogTag()
