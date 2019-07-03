@@ -32,9 +32,10 @@ func main() {
 
 	queue := queue.NewQueue()
 
-	queue.PreProcessor.AddHandler(preprocessor.TFDBMapPrefix_t{})
+	queue.PreProcessor.AddHandler(&preprocessor.TFDBMapPrefix_t{})
+	queue.PreProcessor.AddHandler(&preprocessor.AlreadyProcessed_t{})
 
-	queue.PostProcessor.AddHandler(postprocessor.Organize_t{})
+	queue.PostProcessor.AddHandler(&postprocessor.Organize_t{})
 
 	go ListenExit(queue)
 

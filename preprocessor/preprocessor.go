@@ -1,5 +1,11 @@
 package preprocessor
 
+import (
+	"reflect"
+
+	"github.com/sirupsen/logrus"
+)
+
 type PreProcessorHandler_t interface {
 	Initiate() bool
 	Handle(string) bool
@@ -17,6 +23,8 @@ func NewPreProcessor() *PreProcessor_t {
 
 func (p *PreProcessor_t) AddHandler(h PreProcessorHandler_t) bool {
 	if h.Initiate() == false {
+		logrus.WithField("Handler", reflect.TypeOf(h).Name()).Warn("Handler failed initiation")
+
 		return false
 	}
 

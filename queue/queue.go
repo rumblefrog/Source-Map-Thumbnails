@@ -79,6 +79,8 @@ func (q *Queue_t) Screenshot() {
 
 	var query strings.Builder
 
+	query.WriteString("wait 66;")
+
 	for i := 0; i < len(nodes); i++ {
 		query.WriteString("jpeg;wait 66;spec_next;wait 66;")
 	}
@@ -91,7 +93,7 @@ func (q *Queue_t) Screenshot() {
 		return
 	}
 
-	time.Sleep(time.Duration(800*(len(nodes)+1)) * time.Millisecond)
+	time.Sleep(time.Duration(850*(len(nodes)+1)) * time.Millisecond)
 
 	logrus.WithFields(logrus.Fields{
 		"Map":       q.Maps[q.Position],
@@ -142,6 +144,13 @@ func (q *Queue_t) GetNodes() []meta.Position_t {
 		}
 
 		nodes = append(nodes, resPos)
+
+		// Possible rotating spectator point (never ending)
+		if len(nodes) > 50 {
+			logrus.WithField("Map", q.Maps[q.Position]).Warn("Skipping due to possible infinitely rotating node")
+
+			q.Next()
+		}
 
 		time.Sleep(200 * time.Millisecond)
 	}
@@ -196,7 +205,10 @@ func (q *Queue_t) CheckMap() {
 	if mapMatches[1] != q.Maps[q.Position] || cStateMatches[7] != "active" {
 		q.CheckMapTimed()
 
-		logrus.Debug("Map data mismatch. Retrying in 5s.")
+		logrus.WithFields(logrus.Fields{
+			"MapCheck":   q.Maps[q.Position] + " == " + mapMatches[1],
+			"StateCheck": "active == " + cStateMatches[7],
+		}).Debug("Map data mismatch. Retrying in 5s.")
 
 		return
 	}
@@ -234,7 +246,11 @@ func (q *Queue_t) More() bool {
 
 func (q *Queue_t) Next() {
 	if !q.More() {
+		logrus.WithField("Count", len(q.Maps)).Info("Finished processing maps")
+
 		q.Terminate()
+
+		return
 	}
 
 	q.Position++
