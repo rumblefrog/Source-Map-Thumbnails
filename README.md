@@ -37,7 +37,7 @@ package preprocessor
 type NameCheck_t struct {}
 
 func (n NameCheck_t) Initiate() bool {
-    // Perform any initiation operatin (obtaining file handle, etc)
+    // Perform any initiation operations (obtaining file handle, etc)
 
     // Return true if successful, false otherwise
 }
