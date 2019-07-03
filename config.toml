@@ -11,8 +11,15 @@ GameDirectory = "F:\\SteamLibrary\\steamapps\\common\\Team Fortress 2"
 # Starting map
 StartingMap = "arena_badlands"
 
+[PreProcessing]
+
+### Prefix checking (Checks the map name for a specific prefix)
+PrefixEnabled=true
+Prefix="tfdb"
+
+### Check screenshots folder for already processed items
+AlreadyProcessed=true
+
 [PostProcessing]
-# Will automatically migrate screenshots to their corresponding folder
-Migrate = true
-# Generate meta file per map
-Meta = true
+# Will automatically migrate screenshots to their corresponding folder and generate meta file
+Organize=true

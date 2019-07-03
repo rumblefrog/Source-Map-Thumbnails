@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/rumblefrog/Source-Map-Thumbnails/config"
 	"github.com/rumblefrog/Source-Map-Thumbnails/meta"
 	"github.com/rumblefrog/Source-Map-Thumbnails/utils"
 	"github.com/sirupsen/logrus"
@@ -17,6 +18,10 @@ type Organize_t struct {
 }
 
 func (o Organize_t) Initiate() bool {
+	if config.Config.PostProcessing.Organize == false {
+		return false
+	}
+
 	err := utils.CreateDirIfNotExist("screenshots", os.ModePerm)
 
 	return err == nil

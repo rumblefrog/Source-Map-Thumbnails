@@ -23,7 +23,7 @@ func NewPreProcessor() *PreProcessor_t {
 
 func (p *PreProcessor_t) AddHandler(h PreProcessorHandler_t) bool {
 	if h.Initiate() == false {
-		logrus.WithField("Handler", reflect.TypeOf(h).Name()).Warn("Handler failed initiation")
+		logrus.WithField("Handler", reflect.TypeOf(h).Name()).Info("PreProcessor not enabled")
 
 		return false
 	}

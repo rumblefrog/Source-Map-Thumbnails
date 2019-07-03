@@ -1,6 +1,11 @@
 package postprocessor
 
-import "github.com/rumblefrog/Source-Map-Thumbnails/meta"
+import (
+	"reflect"
+
+	"github.com/rumblefrog/Source-Map-Thumbnails/meta"
+	"github.com/sirupsen/logrus"
+)
 
 type PostProcessorHandler_t interface {
 	Initiate() bool
@@ -19,6 +24,8 @@ func NewPostProcessor() *PostProcessor_t {
 
 func (p *PostProcessor_t) AddHandler(h PostProcessorHandler_t) bool {
 	if h.Initiate() == false {
+		logrus.WithField("Handler", reflect.TypeOf(h).Name()).Info("PostProcessor not enabled")
+
 		return false
 	}
 
