@@ -38,10 +38,10 @@ func SpawnGame(terminate chan<- int8) {
 	var cArg strings.Builder
 
 	cArg.WriteString(filepath.Join(config.Config.Game.GameDirectory, config.Config.Game.EngineBinaryName))
+
+	Command = exec.Command(cArg.String(), append(SpawnArgs, config.Config.Game.LaunchOptions...)...)
+
 	cArg.WriteRune(' ')
-
-	Command = exec.Command(cArg.String())
-
 	for _, v := range SpawnArgs {
 		cArg.WriteRune(' ')
 		cArg.WriteString(v)
@@ -52,6 +52,7 @@ func SpawnGame(terminate chan<- int8) {
 		cArg.WriteString(v)
 	}
 
+	// The following two lines won't be needed if not on linux
 	Command.SysProcAttr = &syscall.SysProcAttr{}
 
 	Command.SysProcAttr.CmdLine = cArg.String()
