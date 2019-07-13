@@ -15,7 +15,7 @@ StartingMap = "arena_badlands"
 
 ### Prefix checking (Checks the map name for a specific prefix)
 PrefixEnabled=true
-Prefix="tfdb"
+Prefix="td_"
 
 ### Check screenshots folder for already processed items
 AlreadyProcessed=true
